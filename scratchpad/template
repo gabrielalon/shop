@@ -1,0 +1,58 @@
+#!/usr/bin/env php
+<?php
+
+set_time_limit(0);
+
+require __DIR__.'/../vendor/autoload.php';
+
+/** @var Illuminate\Foundation\Application $app */
+$app = require_once __DIR__.'/../bootstrap/app.php';
+
+/*
+|--------------------------------------------------------------------------
+| Run The Artisan Application
+|--------------------------------------------------------------------------
+|
+| When we run the console application, the current CLI command will be
+| executed in this console and the response sent back to a terminal
+| or another output device for the developers. Here goes nothing!
+|
+*/
+
+$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
+$kernel->bootstrap();
+
+
+use App\Integrations\Mapbox\Mapbox;
+use GusApi\Exception\InvalidUserKeyException;
+use GusApi\Exception\NotFoundException;
+use GusApi\GusApi;
+use GusApi\ReportTypes;
+use GusApi\BulkReportTypes;
+
+$gus = new GusApi(env('GUS_KEY'));
+//for development server use:
+//$gus = new GusApi('abcde12345abcde12345', 'dev');
+
+try {
+    $nipToCheck = '6263022568'; //change to valid nip value
+    $gus->login();
+
+    $gusReports = $gus->getByNip($nipToCheck);
+
+    foreach ($gusReports as $gusReport) {
+        $mapbox = new Mapbox('pk.eyJ1IjoibWFyb2xyb2xlbSIsImEiOiJja2Zxa3Nya2owc2p5MnlwYTdtcG04M3I5In0.Fcs6s8udeodqW0nFh7HXYQ');
+
+        $query = $gusReport->getStreet(). ' '
+            . $gusReport->getPropertyNumber() . '/' . $gusReport->getApartmentNumber() . ' '
+            . $gusReport->getCity();
+
+        __vd($mapbox->geocode($query)->getData());
+    }
+} catch (InvalidUserKeyException $e) {
+    echo 'Bad user key';
+} catch (NotFoundException $e) {
+    echo 'No data found <br>';
+    echo 'For more information read server message below: <br>';
+    echo $gus->getResultSearchMessage();
+}

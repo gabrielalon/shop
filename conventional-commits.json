@@ -1,0 +1,19 @@
+{
+    "typeCase": "kebab",
+    "types": [
+        "ci",
+        "deps",
+        "docs",
+        "refactor",
+        "style",
+        "test"
+    ],
+    "scopeCase": "kebab",
+    "scopeRequired": false,
+    "scopes": [],
+    "descriptionCase": "lower",
+    "descriptionEndMark": "",
+    "bodyRequired": true,
+    "bodyWrapWidth": 72,
+    "requiredFooters": ["Signed-off-by"]
+}
