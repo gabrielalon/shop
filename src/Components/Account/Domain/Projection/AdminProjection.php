@@ -17,6 +17,11 @@ interface AdminProjection
     public function onAdminNameChanged(Event\AdminNameChanged $event): void;
 
     /**
+     * @param Event\AdminLocaleRefreshed $event
+     */
+    public function onAdminLocaleRefreshed(Event\AdminLocaleRefreshed $event): void;
+
+    /**
      * @param Event\AdminRemoved $event
      */
     public function onAdminRemoved(Event\AdminRemoved $event): void;

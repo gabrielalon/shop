@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Model as Eloquent;
  * @property string $user_id
  * @property string $role_id
  */
-class UserRole extends Eloquent
+final class UserRole extends Eloquent
 {
     use HasFactory;
 
@@ -27,7 +27,7 @@ class UserRole extends Eloquent
     /**
      * {@inheritdoc}
      */
-    protected static function newFactory()
+    protected static function newFactory(): UserRoleFactory
     {
         return UserRoleFactory::new();
     }

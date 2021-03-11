@@ -5,6 +5,7 @@ namespace App\System\Illuminate\Service\Providers;
 use App\Components\Account\Application\Query\AdminQuery;
 use App\Components\Account\Application\Query\RoleQuery;
 use App\Components\Account\Application\Query\UserQuery;
+use App\Components\Account\Application\Saga\AdminSaga;
 use App\Components\Account\Domain\AuthProvider;
 use App\Components\Account\Domain\Persist\AdminRepository;
 use App\Components\Account\Domain\Persist\UserRepository;
@@ -106,6 +107,7 @@ class AppServiceProvider extends SupportServiceProvider
     public function boot(): void
     {
         $this->app->make(SagaRegistry::class)
+            ->register($this->app->get(AdminSaga::class))
             ->register($this->app->get(BlogCategorySaga::class))
             ->register($this->app->get(BlogEntrySaga::class))
         ;

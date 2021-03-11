@@ -221,8 +221,8 @@ final class Price
         if (false === $currencyA->isEqual($currencyB)) {
             $message = sprintf(
                 'Can not operate on different currencies ("%s" and "%s")',
-                (string) $currencyA,
-                (string) $currencyB
+                $currencyA->__toString(),
+                $currencyB->__toString()
             );
 
             throw new \LogicException($message);
@@ -343,30 +343,7 @@ final class Price
         $newGross = $this->getGross() / $times;
         $currency = $this->getCurrency();
 
-        return self::buildByGross((string) $currency, $newGross, $this->getTaxRate());
-    }
-
-    /**
-     * @param string $locale
-     * @param string $country
-     * @param string $format
-     * @param string $encoding
-     *
-     * @return string
-     */
-    public function toString(
-        string $locale,
-        string $country,
-        string $format = '%.2n',
-        string $encoding = 'UTF-8'
-    ): string {
-        $currentLocale = setlocale(LC_ALL, 0);
-
-        setlocale(LC_MONETARY, sprintf('%s_%s.%s', $locale, $country, $encoding));
-        $price = money_format($format, $this->getNett());
-        setlocale(LC_MONETARY, $currentLocale);
-
-        return $price;
+        return self::buildByGross($currency->__toString(), $newGross, $this->getTaxRate());
     }
 
     /**

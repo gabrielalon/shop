@@ -6,12 +6,11 @@ use App\Components\Content\Domain\Event;
 use App\Components\Content\Domain\Projection\BlogCategoryProjection;
 use App\Components\Content\Infrastructure\Entity\BlogCategory as CategoryEntity;
 use App\Components\Site\Domain\Enum\LocaleEnum;
-use Illuminate\Database\Eloquent\Model;
 
-class BlogCategoryEloquentProjector implements BlogCategoryProjection
+final class BlogCategoryEloquentProjector implements BlogCategoryProjection
 {
     /** @var CategoryEntity */
-    private $db;
+    private CategoryEntity $db;
 
     /**
      * BlogCategoryEloquentProjector constructor.
@@ -86,6 +85,8 @@ class BlogCategoryEloquentProjector implements BlogCategoryProjection
 
     /**
      * {@inheritdoc}
+     *
+     * @throws \Exception
      */
     public function onBlogCategoryRemoved(Event\BlogCategoryRemoved $event): void
     {
@@ -97,10 +98,10 @@ class BlogCategoryEloquentProjector implements BlogCategoryProjection
     /**
      * @param Event\BlogCategoryEvent $event
      *
-     * @return CategoryEntity|Model|null
+     * @return CategoryEntity|null
      */
     public function findBlogCategory(Event\BlogCategoryEvent $event): ?CategoryEntity
     {
-        return $this->db->newQuery()->find($event->blogCategoryId()->toString());
+        return $this->db::findByUuid($event->blogCategoryId()->toString());
     }
 }

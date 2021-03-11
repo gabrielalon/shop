@@ -43,12 +43,10 @@ class AuthServiceProvider extends ServiceProvider
         $altPermissions = ['*', $permission];
         $permParts = explode('.', $permission);
 
-        if ($permParts && count($permParts) > 1) {
-            $currentPermission = '';
-            for ($i = 0; $i < (count($permParts) - 1); ++$i) {
-                $currentPermission .= $permParts[$i].'.';
-                $altPermissions[] = $currentPermission.'*';
-            }
+        $currentPermission = '';
+        for ($i = 0; $i < (count($permParts) - 1); ++$i) {
+            $currentPermission .= $permParts[$i].'.';
+            $altPermissions[] = $currentPermission.'*';
         }
 
         return $altPermissions;

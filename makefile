@@ -8,7 +8,7 @@ update: ## initialize composer update
 
 .PHONY: style
 style: ## executes php analizers
-		./vendor/bin/phpstan analyse -l 1 -c phpstan.neon
+		./vendor/bin/phpstan analyse -l 5 -c phpstan.neon
 
 .PHONY: cs
 cs: ## executes php cs fixer

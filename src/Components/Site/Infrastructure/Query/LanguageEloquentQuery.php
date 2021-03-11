@@ -7,15 +7,14 @@ use App\Components\Site\Application\Query\Model\LanguageCollection;
 use App\Components\Site\Domain\Enum\LocaleEnum;
 use App\Components\Site\Infrastructure\Entity\Language as LanguageEntity;
 use App\Components\Site\Infrastructure\Query\Model\LanguageFactory;
-use Illuminate\Database\Eloquent\Model;
 
-class LanguageEloquentQuery implements LanguageQuery
+final class LanguageEloquentQuery implements LanguageQuery
 {
     /** @var LanguageEntity */
-    private $db;
+    private LanguageEntity $db;
 
     /** @var LanguageFactory */
-    private $factory;
+    private LanguageFactory $factory;
 
     /**
      * LanguageEloquentQuery constructor.
@@ -37,19 +36,9 @@ class LanguageEloquentQuery implements LanguageQuery
         $collection = new LanguageCollection();
 
         foreach (LocaleEnum::values() as $locale) {
-            $collection->add($this->factory->build($this->findLanguage($locale)));
+            $collection->add($this->factory->build($this->db::findByCode($locale->getValue())));
         }
 
         return $collection;
-    }
-
-    /**
-     * @param string $code
-     *
-     * @return LanguageEntity|Model|null
-     */
-    private function findLanguage(string $code): ?LanguageEntity
-    {
-        return $this->db->newQuery()->find($code);
     }
 }

@@ -22,7 +22,7 @@ trait AccountContext
             Uuid::fromIdentity(Str::uuid()->toString()),
             Name::fromData('firstName', 'lastName'),
             Text::fromString('email@email.test'),
-            Uuid::fromIdentity(Str::uuid()->toString()),
+            Text::fromString('password-test'),
         ]];
     }
 

@@ -5,14 +5,14 @@ namespace App\Components\Content\Application\Command\RemoveBlogCategory;
 use App\Components\Content\Application\Command\BlogCategoryCommandHandler;
 use App\System\Messaging\Command\Command;
 
-class RemoveBlogCategoryHandler extends BlogCategoryCommandHandler
+final class RemoveBlogCategoryHandler extends BlogCategoryCommandHandler
 {
     /**
      * {@inheritdoc}
      */
     public function run(Command $command): void
     {
-        /* @var RemoveBlogCategory $command */
+        assert($command instanceof RemoveBlogCategory);
 
         $category = $this->repository->find($command->id());
 

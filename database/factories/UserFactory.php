@@ -18,9 +18,12 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
+        $email = $this->faker->unique()->safeEmail;
+
         return [
             'id' => $this->faker->uuid,
-            'login' => $this->faker->unique()->safeEmail,
+            'login' => $email,
+            'email' => $email,
             'email_verified_at' => now(),
             'password' => app()->get(Hasher::class)->make($this->faker->password),
             'remember_token' => Str::random(10),

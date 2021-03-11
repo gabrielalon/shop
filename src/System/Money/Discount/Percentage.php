@@ -6,7 +6,7 @@ use App\System\Money\Discount;
 use App\System\Money\DiscountEnum;
 use App\System\Money\Price;
 
-class Percentage extends Discount
+final class Percentage extends Discount
 {
     /**
      * {@inheritdoc}

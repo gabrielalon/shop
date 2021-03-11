@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string       $locale
  * @property string       $name
  */
-class BlogCategoryTranslation extends Eloquent
+final class BlogCategoryTranslation extends Eloquent
 {
     /** @var bool */
     public $timestamps = false;

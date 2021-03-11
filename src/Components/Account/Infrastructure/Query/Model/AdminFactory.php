@@ -5,9 +5,10 @@ namespace App\Components\Account\Infrastructure\Query\Model;
 use App\Components\Account\Application\Query\Model\Admin;
 use App\Components\Account\Application\Query\Model\AdminAvatar;
 use App\Components\Account\Infrastructure\Entity\Admin as AdminEntity;
+use App\Components\Content\Infrastructure\Entity\Media;
 use App\System\Spatie\Media\MediaEnum;
 
-class AdminFactory
+final class AdminFactory
 {
     /** @var MediaEnum */
     private MediaEnum $mediaCollection;
@@ -32,7 +33,7 @@ class AdminFactory
             $entity->user_id,
             $entity->first_name,
             $entity->last_name,
-            $entity->email,
+            $entity->user->email,
             $this->buildAvatar($entity)
         );
     }
@@ -44,8 +45,8 @@ class AdminFactory
      */
     private function buildAvatar(AdminEntity $entity): AdminAvatar
     {
-        if (true === $entity->hasMedia($this->mediaCollection->getValue())) {
-            $media = $entity->getFirstMedia($this->mediaCollection->getValue());
+        if ($media = $entity->getFirstMedia($this->mediaCollection->getValue())) {
+            assert($media instanceof Media);
 
             return new AdminAvatar(
                 true,

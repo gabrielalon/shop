@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @property Collection $users
  * @property Collection $roles
  */
-class Permission extends Eloquent implements HasUuid, TranslatableContract
+final class Permission extends Eloquent implements HasUuid, TranslatableContract
 {
     use HasUuidTrait;
     use Translatable;

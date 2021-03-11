@@ -7,10 +7,10 @@ use App\Components\Account\Domain\Persist\UserRepository;
 use App\System\Messaging\Command\Command;
 use Illuminate\Contracts\Hashing\Hasher;
 
-class ChangeUserPasswordHandler extends UserCommandHandler
+final class ChangeUserPasswordHandler extends UserCommandHandler
 {
     /** @var Hasher */
-    private $hasher;
+    private Hasher $hasher;
 
     /**
      * ChangePasswordHandler constructor.
@@ -29,7 +29,8 @@ class ChangeUserPasswordHandler extends UserCommandHandler
      */
     public function run(Command $command): void
     {
-        /** @var ChangeUserPassword $command */
+        assert($command instanceof ChangeUserPassword);
+
         $user = $this->repository->find($command->id());
 
         $user->changePassword($this->hasher->make($command->password()));

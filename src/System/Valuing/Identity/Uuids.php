@@ -24,11 +24,11 @@ final class Uuids extends VO
     }
 
     /**
-     * @param Uuids $other
+     * @param mixed $other
      *
      * @return bool
      */
-    public function equals($other): bool
+    public function equals(mixed $other): bool
     {
         if (false === $other instanceof self) {
             return false;

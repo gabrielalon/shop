@@ -21,8 +21,10 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  * @property string $last_name
  * @property string $user_id
  * @property User   $user
+ *
+ * @method static Admin|null findByUuid(string $uuid)
  */
-class Admin extends Eloquent implements HasUuid, HasMedia
+final class Admin extends Eloquent implements HasUuid, HasMedia
 {
     use HasFactory;
     use HasUuidTrait;
@@ -44,7 +46,7 @@ class Admin extends Eloquent implements HasUuid, HasMedia
     /**
      * {@inheritdoc}
      */
-    protected static function newFactory()
+    protected static function newFactory(): AdminFactory
     {
         return AdminFactory::new();
     }

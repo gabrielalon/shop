@@ -13,9 +13,25 @@ class CreateUsersTables extends Migration
      */
     public function up()
     {
+        Schema::create('state', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->string('type', 64)->index();
+        });
+
+        Schema::create('state_translation', function (Blueprint $table) {
+            $table->id();
+            $table->foreignUuid('state_id')->references('id')->on('state');
+            $table->char('locale', 2);
+            $table->string('name');
+
+            $table->unique(['state_id', 'locale'], 'state_translation');
+            $table->foreign('locale')->references('code')->on('language');
+        });
+
         Schema::create('user', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('login')->index();
+            $table->foreignUuid('state_id')->references('id')->on('user_state');
             $table->char('locale', 2);
             $table->string('email')->nullable()->index();
             $table->timestamp('email_verified_at')->nullable();
@@ -112,5 +128,7 @@ class CreateUsersTables extends Migration
         Schema::dropIfExists('role');
         Schema::dropIfExists('password_reset');
         Schema::dropIfExists('user');
+        Schema::dropIfExists('state_translation');
+        Schema::dropIfExists('state');
     }
 }

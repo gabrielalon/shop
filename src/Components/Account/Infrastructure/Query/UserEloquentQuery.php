@@ -9,13 +9,13 @@ use App\Components\Account\Domain\Enum\RoleEnum;
 use App\Components\Account\Infrastructure\Entity\User as UserEntity;
 use App\Components\Account\Infrastructure\Query\Model\UserFactory;
 
-class UserEloquentQuery implements UserQuery
+final class UserEloquentQuery implements UserQuery
 {
     /** @var UserEntity */
-    private $db;
+    private UserEntity $db;
 
     /** @var UserFactory */
-    private $factory;
+    private UserFactory $factory;
 
     /**
      * UserEloquentQuery constructor.
@@ -41,8 +41,9 @@ class UserEloquentQuery implements UserQuery
             ->with(['roles', 'permissions'])
         ;
 
-        /** @var UserEntity $entity */
         if ($entity = $query->first()) {
+            assert($entity instanceof UserEntity);
+
             return $this->factory->fromEntity($entity);
         }
 
@@ -54,7 +55,6 @@ class UserEloquentQuery implements UserQuery
      */
     public function findUserById(string $id): User
     {
-        /** @var UserEntity $entity */
         if ($entity = UserEntity::findByUuid($id)) {
             return $this->factory->fromEntity($entity);
         }
@@ -69,8 +69,9 @@ class UserEloquentQuery implements UserQuery
     {
         $condition = ['id' => $id, 'remember_token' => $token];
 
-        /** @var UserEntity $entity */
         if ($entity = $this->db->newQuery()->where($condition)->first()) {
+            assert($entity instanceof UserEntity);
+
             return $this->factory->fromEntity($entity);
         }
 

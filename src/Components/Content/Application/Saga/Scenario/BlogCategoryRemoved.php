@@ -7,7 +7,7 @@ use App\System\Messaging\Saga\Scenario;
 class BlogCategoryRemoved implements Scenario
 {
     /** @var string */
-    private $id;
+    private string $id;
 
     /**
      * BlogCategoryRemoved constructor.

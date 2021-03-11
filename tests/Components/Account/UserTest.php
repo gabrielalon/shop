@@ -8,13 +8,12 @@ use App\Components\Account\Domain\User;
 use App\Components\Account\Domain\Valuing\Roles;
 use App\Components\Site\Domain\Enum\LocaleEnum;
 use App\System\Messaging\Aggregate\AggregateChanged;
-use App\System\Messaging\Aggregate\AggregateRoot;
 use App\System\Valuing\Char\Text;
 use App\System\Valuing\Identity\Uuid;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
-class UserTest extends TestCase
+final class UserTest extends TestCase
 {
     /**
      * @test
@@ -35,15 +34,15 @@ class UserTest extends TestCase
         /** @var AggregateChanged[] $events */
         $events = $this->popRecordedEvents($user);
 
-        $this->assertCount(1, $events);
+        self::assertCount(1, $events);
 
-        /** @var Event\UserCreated $event */
         $event = $events[0];
+        assert($event instanceof Event\UserCreated);
 
-        $this->assertSame(Event\UserCreated::class, $event->eventName());
-        $this->assertTrue($userId->equals($event->userId()));
-        $this->assertTrue($userLogin->equals($event->userLogin()));
-        $this->assertTrue($userPassword->equals($event->userPassword()));
+        self::assertSame(Event\UserCreated::class, $event->eventName());
+        self::assertTrue($userId->equals($event->userId()));
+        self::assertTrue($userLogin->equals($event->userLogin()));
+        self::assertTrue($userPassword->equals($event->userPassword()));
     }
 
     /**
@@ -69,13 +68,13 @@ class UserTest extends TestCase
         /** @var AggregateChanged[] $events */
         $events = $this->popRecordedEvents($user);
 
-        $this->assertCount(1, $events);
+        self::assertCount(1, $events);
 
-        /** @var Event\UserLocaleRefreshed $event */
         $event = $events[0];
+        assert($event instanceof Event\UserLocaleRefreshed);
 
-        $this->assertSame(Event\UserLocaleRefreshed::class, $event->eventName());
-        $this->assertTrue($event->userLocale()->equals(Text::fromString($locale)));
+        self::assertSame(Event\UserLocaleRefreshed::class, $event->eventName());
+        self::assertTrue($event->userLocale()->equals(Text::fromString($locale)));
     }
 
     /**
@@ -101,13 +100,13 @@ class UserTest extends TestCase
         /** @var AggregateChanged[] $events */
         $events = $this->popRecordedEvents($user);
 
-        $this->assertCount(1, $events);
+        self::assertCount(1, $events);
 
-        /** @var Event\UserPasswordChanged $event */
         $event = $events[0];
+        assert($event instanceof Event\UserPasswordChanged);
 
-        $this->assertSame(Event\UserPasswordChanged::class, $event->eventName());
-        $this->assertTrue($event->userPassword()->equals(Text::fromString($password)));
+        self::assertSame(Event\UserPasswordChanged::class, $event->eventName());
+        self::assertTrue($event->userPassword()->equals(Text::fromString($password)));
     }
 
     /**
@@ -133,13 +132,13 @@ class UserTest extends TestCase
         /** @var AggregateChanged[] $events */
         $events = $this->popRecordedEvents($user);
 
-        $this->assertCount(1, $events);
+        self::assertCount(1, $events);
 
-        /** @var Event\UserRememberTokenRefreshed $event */
         $event = $events[0];
+        assert($event instanceof Event\UserRememberTokenRefreshed);
 
-        $this->assertSame(Event\UserRememberTokenRefreshed::class, $event->eventName());
-        $this->assertTrue($event->userRememberToken()->equals(Text::fromString($token)));
+        self::assertSame(Event\UserRememberTokenRefreshed::class, $event->eventName());
+        self::assertTrue($event->userRememberToken()->equals(Text::fromString($token)));
     }
 
     /**
@@ -165,23 +164,27 @@ class UserTest extends TestCase
         /** @var AggregateChanged[] $events */
         $events = $this->popRecordedEvents($user);
 
-        $this->assertCount(1, $events);
+        self::assertCount(1, $events);
 
-        /** @var Event\UserRolesAssigned $event */
         $event = $events[0];
+        assert($event instanceof Event\UserRolesAssigned);
 
-        $this->assertSame(Event\UserRolesAssigned::class, $event->eventName());
-        $this->assertTrue($event->userRoles()->equals($roles));
+        self::assertSame(Event\UserRolesAssigned::class, $event->eventName());
+        self::assertTrue($event->userRoles()->equals($roles));
     }
 
     /**
      * @param AggregateChanged ...$events
      *
-     * @return AggregateRoot|User
+     * @return User
      */
-    private function reconstituteUserFromHistory(AggregateChanged ...$events): AggregateRoot
+    private function reconstituteUserFromHistory(AggregateChanged ...$events): User
     {
-        return $this->reconstituteAggregateFromHistory(User::class, $events);
+        $user = $this->reconstituteAggregateFromHistory(User::class, $events);
+
+        assert($user instanceof User);
+
+        return $user;
     }
 
     /**
@@ -193,9 +196,13 @@ class UserTest extends TestCase
      */
     public function newUserCreated(Uuid $userId, Text $userLogin, Text $userPassword): Event\UserCreated
     {
-        return Event\UserCreated::occur($userId->toString(), [
+        $event = Event\UserCreated::occur($userId->toString(), [
             'login' => $userLogin->toString(),
             'password' => $userPassword->toString(),
         ]);
+
+        assert($event instanceof Event\UserCreated);
+
+        return $event;
     }
 }

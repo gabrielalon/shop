@@ -5,13 +5,13 @@ namespace App\Components\Content\Application\Service;
 use App\Components\Content\Domain\Enum\SystemSettingType;
 use App\Components\Content\Infrastructure\Entity\SystemSetting as SystemSettingEntity;
 
-class SystemSettingRegistry
+final class SystemSettingRegistry
 {
     /** @var SystemSettingEntity */
-    private $db;
+    private SystemSettingEntity $db;
 
     /** @var \ArrayIterator */
-    private $cache;
+    private \ArrayIterator $cache;
 
     /**
      * SystemSettingRegistry constructor.
@@ -27,11 +27,11 @@ class SystemSettingRegistry
     /**
      * @param string $key
      * @param string $dataType
-     * @param string $default
+     * @param mixed  $default
      *
      * @return SystemSettingEntity
      */
-    public function get(string $key, string $dataType, $default = ''): SystemSettingEntity
+    public function get(string $key, string $dataType, mixed $default = ''): SystemSettingEntity
     {
         if (false === $this->cache->offsetExists($key)) {
             $this->cache->offsetSet($key, $this->db->newQuery()->updateOrCreate(['key' => $key], [

@@ -22,7 +22,6 @@ class AdminFactory extends Factory
             'id' => $this->faker->uuid,
             'first_name' => $this->faker->firstName,
             'last_name' => $this->faker->lastName,
-            'email' => $user->login,
             'user_id' => $user->id,
         ];
     }

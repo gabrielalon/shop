@@ -5,14 +5,14 @@ namespace App\Components\Content\Application\Command\PublishBlogEntry;
 use App\Components\Content\Application\Command\BlogEntryCommandHandler;
 use App\System\Messaging\Command\Command;
 
-class PublishBlogEntryHandler extends BlogEntryCommandHandler
+final class PublishBlogEntryHandler extends BlogEntryCommandHandler
 {
     /**
      * {@inheritdoc}
      */
     public function run(Command $command): void
     {
-        /* @var PublishBlogEntry $command */
+        assert($command instanceof PublishBlogEntry);
 
         $category = $this->repository->find($command->id());
 

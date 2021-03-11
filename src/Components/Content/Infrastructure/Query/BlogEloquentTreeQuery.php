@@ -7,13 +7,13 @@ use App\Components\Content\Application\Query\Model\BlogCategoryCollection;
 use App\Components\Content\Infrastructure\Entity\BlogCategory as CategoryEntity;
 use App\Components\Content\Infrastructure\Query\Model\BlogFactory;
 
-class BlogEloquentTreeQuery implements BlogTreeQuery
+final class BlogEloquentTreeQuery implements BlogTreeQuery
 {
     /** @var CategoryEntity */
-    private $db;
+    private CategoryEntity $db;
 
     /** @var BlogFactory */
-    private $factory;
+    private BlogFactory $factory;
 
     /**
      * BlogEloquentTreeQuery constructor.
@@ -40,8 +40,8 @@ class BlogEloquentTreeQuery implements BlogTreeQuery
             ->orderBy('created_at')
         ;
 
-        /** @var CategoryEntity $entity */
         foreach ($query->get()->all() as $entity) {
+            assert($entity instanceof CategoryEntity);
             $collection->add($this->factory->buildCategory($entity));
         }
 
@@ -61,8 +61,8 @@ class BlogEloquentTreeQuery implements BlogTreeQuery
             ->orderBy('created_at')
         ;
 
-        /** @var CategoryEntity $entity */
         foreach ($query->get()->all() as $entity) {
+            assert($entity instanceof CategoryEntity);
             $collection->add($this->factory->buildCategory($entity));
         }
 

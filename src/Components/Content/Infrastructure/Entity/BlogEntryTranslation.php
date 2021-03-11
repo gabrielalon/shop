@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string    $name
  * @property string    $description
  */
-class BlogEntryTranslation extends Eloquent
+final class BlogEntryTranslation extends Eloquent
 {
     /** @var bool */
     public $timestamps = false;

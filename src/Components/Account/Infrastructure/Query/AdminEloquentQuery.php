@@ -9,13 +9,13 @@ use App\Components\Account\Application\Query\Model\AdminCollection;
 use App\Components\Account\Infrastructure\Entity\Admin as AdminEntity;
 use App\Components\Account\Infrastructure\Query\Model\AdminFactory;
 
-class AdminEloquentQuery implements AdminQuery
+final class AdminEloquentQuery implements AdminQuery
 {
     /** @var AdminEntity */
-    private $db;
+    private AdminEntity $db;
 
     /** @var AdminFactory */
-    private $factory;
+    private AdminFactory $factory;
 
     /**
      * AdminEloquentQuery constructor.
@@ -44,7 +44,6 @@ class AdminEloquentQuery implements AdminQuery
      */
     public function findAdminById(string $id): Admin
     {
-        /** @var AdminEntity $entity */
         if ($entity = AdminEntity::findByUuid($id)) {
             return $this->factory->fromEntity($entity);
         }
@@ -59,8 +58,9 @@ class AdminEloquentQuery implements AdminQuery
     {
         $condition = ['user_id' => $userId];
 
-        /** @var AdminEntity $entity */
         if ($entity = $this->db->newQuery()->where($condition)->first()) {
+            assert($entity instanceof AdminEntity);
+
             return $this->factory->fromEntity($entity);
         }
 
@@ -74,8 +74,8 @@ class AdminEloquentQuery implements AdminQuery
     {
         $collection = new AdminCollection();
 
-        /** @var AdminEntity $entity */
         foreach ($this->db->newQuery()->orderBy('created_at')->get()->all() as $entity) {
+            assert($entity instanceof AdminEntity);
             $collection->add($this->factory->fromEntity($entity));
         }
 

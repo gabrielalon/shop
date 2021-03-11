@@ -11,13 +11,13 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Hashing\Hasher;
 use Illuminate\Support\Arr;
 
-class UserAuthProvider implements AuthProvider
+final class UserAuthProvider implements AuthProvider
 {
     /** @var Hasher */
-    private $hasher;
+    private Hasher $hasher;
 
     /** @var Account */
-    private $account;
+    private Account $account;
 
     /**
      * UserAuthProvider constructor.
@@ -34,7 +34,7 @@ class UserAuthProvider implements AuthProvider
     /**
      * {@inheritdoc}
      */
-    public function retrieveById($identifier)
+    public function retrieveById($identifier): ?User
     {
         try {
             return $this->account->askUser()->findUserById($identifier);
@@ -46,7 +46,7 @@ class UserAuthProvider implements AuthProvider
     /**
      * {@inheritdoc}
      */
-    public function retrieveByToken($identifier, $token)
+    public function retrieveByToken($identifier, $token): ?User
     {
         try {
             return $this->account->askUser()->findUserByIdAndRememberToken($identifier, $token);
@@ -58,7 +58,7 @@ class UserAuthProvider implements AuthProvider
     /**
      * {@inheritdoc}
      */
-    public function updateRememberToken(Authenticatable $user, $token)
+    public function updateRememberToken(Authenticatable $user, $token): void
     {
         $this->account->refreshUserRememberToken($user->getAuthIdentifier(), $token);
     }
@@ -66,7 +66,7 @@ class UserAuthProvider implements AuthProvider
     /**
      * {@inheritdoc}
      */
-    public function retrieveByCredentials(array $credentials)
+    public function retrieveByCredentials(array $credentials): ?User
     {
         $user = null;
 
@@ -97,12 +97,11 @@ class UserAuthProvider implements AuthProvider
     /**
      * {@inheritdoc}
      */
-    public function validateCredentials(Authenticatable $user, array $credentials)
+    public function validateCredentials(Authenticatable $user, array $credentials): bool
     {
-        if (Arr::exists($credentials, 'password')) {
+        if (true === Arr::exists($credentials, 'password')) {
             $plain = $credentials['password'];
 
-            /* @var User $user */
             return $this->hasher->check($plain, $user->getAuthPassword());
         }
 

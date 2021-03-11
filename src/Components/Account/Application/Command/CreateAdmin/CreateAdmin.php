@@ -7,16 +7,16 @@ use App\Components\Account\Application\Command\AdminCommand;
 class CreateAdmin extends AdminCommand
 {
     /** @var string */
-    private $firstName;
+    private string $firstName;
 
     /** @var string */
-    private $lastName;
+    private string $lastName;
 
     /** @var string */
-    private $email;
+    private string $email;
 
     /** @var string */
-    private $userId;
+    private string $password;
 
     /**
      * CreateAdmin constructor.
@@ -25,20 +25,20 @@ class CreateAdmin extends AdminCommand
      * @param string $firstName
      * @param string $lastName
      * @param string $email
-     * @param string $userId
+     * @param string $password
      */
     public function __construct(
         string $id,
         string $firstName,
         string $lastName,
         string $email,
-        string $userId
+        string $password
     ) {
         $this->setId($id);
         $this->firstName = $firstName;
         $this->lastName = $lastName;
         $this->email = $email;
-        $this->userId = $userId;
+        $this->password = $password;
     }
 
     /**
@@ -68,8 +68,8 @@ class CreateAdmin extends AdminCommand
     /**
      * @return string
      */
-    public function userId(): string
+    public function password(): string
     {
-        return $this->userId;
+        return $this->password;
     }
 }

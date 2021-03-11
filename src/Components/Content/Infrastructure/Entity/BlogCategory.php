@@ -22,8 +22,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property bool         $is_active
  * @property int          $position
  * @property Collection   $children
+ *
+ * @method static BlogCategory|null findByUuid(string $uuid)
  */
-class BlogCategory extends Eloquent implements HasUuid, TranslatableContract
+final class BlogCategory extends Eloquent implements HasUuid, TranslatableContract
 {
     use Translatable;
     use HasFactory;
@@ -34,7 +36,7 @@ class BlogCategory extends Eloquent implements HasUuid, TranslatableContract
     public $incrementing = false;
 
     /** @var string[] */
-    public $translatedAttributes = ['name'];
+    public array $translatedAttributes = ['name'];
 
     /** @var string */
     protected $table = 'blog_category';
@@ -53,7 +55,7 @@ class BlogCategory extends Eloquent implements HasUuid, TranslatableContract
     /**
      * {@inheritdoc}
      */
-    protected static function newFactory()
+    protected static function newFactory(): BlogCategoryFactory
     {
         return BlogCategoryFactory::new();
     }
@@ -82,7 +84,7 @@ class BlogCategory extends Eloquent implements HasUuid, TranslatableContract
         $names = [];
 
         foreach (LocaleEnum::values() as $locale) {
-            $names[$locale->getValue()] = $this->getTranslationOrNew($locale->getValue())->name;
+            $names[$locale->getValue()] = $this->getTranslationOrNew($locale->getValue())->getAttributeValue('name');
         }
 
         return $names;

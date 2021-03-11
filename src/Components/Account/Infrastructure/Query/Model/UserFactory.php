@@ -5,7 +5,7 @@ namespace App\Components\Account\Infrastructure\Query\Model;
 use App\Components\Account\Application\Query\Model\User;
 use App\Components\Account\Infrastructure\Entity\User as UserEntity;
 
-class UserFactory
+final class UserFactory
 {
     /**
      * @param UserEntity $entity

@@ -7,13 +7,13 @@ use App\Components\Site\Application\Query\Model\CountryCollection;
 use App\Components\Site\Infrastructure\Entity\Country as CountryEntity;
 use App\Components\Site\Infrastructure\Query\Model\CountryFactory;
 
-class CountryEloquentQuery implements CountryQuery
+final class CountryEloquentQuery implements CountryQuery
 {
     /** @var CountryEntity */
-    private $db;
+    private CountryEntity $db;
 
     /** @var CountryFactory */
-    private $factory;
+    private CountryFactory $factory;
 
     /**
      * CountryEloquentQuery constructor.
@@ -34,8 +34,8 @@ class CountryEloquentQuery implements CountryQuery
     {
         $collection = new CountryCollection();
 
-        /** @var CountryEntity $entity */
         foreach ($this->db->newQuery()->get()->all() as $entity) {
+            assert($entity instanceof CountryEntity);
             $collection->add($this->factory->build($entity));
         }
 

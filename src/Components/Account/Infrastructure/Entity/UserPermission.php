@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model as Eloquent;
  * @property string $user_id
  * @property string $permission_id
  */
-class UserPermission extends Eloquent
+final class UserPermission extends Eloquent
 {
     /** @var bool */
     public $timestamps = false;

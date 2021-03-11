@@ -5,27 +5,26 @@ namespace App\Components\Content\Application\Query\Model;
 use App\System\Valuing\Intl\Language\Contents;
 use App\System\Valuing\Intl\Language\Texts;
 use Carbon\Carbon;
-use SebastianBergmann\CodeCoverage\Report\Xml\Tests;
 
 class BlogEntry
 {
     /** @var string */
-    private $id;
+    private string $id;
 
-    /** @var Tests */
-    private $name;
+    /** @var Texts */
+    private Texts $name;
 
     /** @var Contents */
-    private $description;
+    private Contents $description;
 
     /** @var Carbon */
-    private $publishAt;
+    private Carbon $publishAt;
 
     /** @var bool */
-    private $active;
+    private bool $active;
 
     /** @var BlogCategoryCollection */
-    private $categories;
+    private BlogCategoryCollection $categories;
 
     /**
      * BlogEntry constructor.

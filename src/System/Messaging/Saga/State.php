@@ -2,19 +2,19 @@
 
 namespace App\System\Messaging\Saga;
 
-class State
+final class State
 {
     /** @var string */
-    private $id;
+    private string $id;
 
     /** @var string|null */
-    private $aggregateId;
+    private ?string $aggregateId;
 
     /** @var bool */
-    private $done;
+    private bool $done;
 
     /** @var \ArrayIterator */
-    private $payload;
+    private \ArrayIterator $payload;
 
     /**
      * State constructor.
@@ -41,11 +41,11 @@ class State
 
     /**
      * @param string $key
-     * @param $value
+     * @param mixed  $value
      *
      * @return State
      */
-    public function set(string $key, $value): State
+    public function set(string $key, mixed $value): State
     {
         $this->payload->offsetSet($key, $value);
 
@@ -55,9 +55,9 @@ class State
     /**
      * @param string $key
      *
-     * @return mixed|null
+     * @return mixed
      */
-    public function get(string $key)
+    public function get(string $key): mixed
     {
         if (false === $this->payload->offsetExists($key)) {
             return null;

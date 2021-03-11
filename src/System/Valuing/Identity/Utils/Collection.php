@@ -27,11 +27,9 @@ final class Collection extends ArrayIterator
             return false;
         }
 
-        /**
-         * @var string
-         * @var Identity\Uuid $value
-         */
         foreach ($this->getArrayCopy() as $uuid => $value) {
+            assert($value instanceof Identity\Uuid);
+
             try {
                 $otherValue = $other->get($uuid);
             } catch (InvalidArgumentException $e) {
@@ -56,7 +54,7 @@ final class Collection extends ArrayIterator
     public function get(string $uuid): Identity\Uuid
     {
         if (false === $this->offsetExists($uuid)) {
-            throw new InvalidArgumentException('Not Found Uuid string: '.$uuid, $uuid);
+            throw new InvalidArgumentException('Not Found Uuid string: '.$uuid, 500);
         }
 
         return $this->offsetGet($uuid);

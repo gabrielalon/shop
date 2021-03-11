@@ -6,12 +6,12 @@ use App\Components\Account\Domain\Admin;
 use App\Components\Account\Domain\Event;
 use App\Components\Account\Domain\Valuing\Name;
 use App\System\Messaging\Aggregate\AggregateChanged;
-use App\System\Messaging\Aggregate\AggregateRoot;
 use App\System\Valuing\Char\Text;
 use App\System\Valuing\Identity\Uuid;
+use App\System\Valuing\Intl\Language\Code;
 use Tests\TestCase;
 
-class AdminTest extends TestCase
+final class AdminTest extends TestCase
 {
     /**
      * @test
@@ -20,31 +20,31 @@ class AdminTest extends TestCase
      * @param Uuid $adminId
      * @param Name $adminName
      * @param Text $adminEmail
-     * @param Uuid $adminUserId
+     * @param Text $adminPassword
      */
-    public function itCreatesNewAdmin(Uuid $adminId, Name $adminName, Text $adminEmail, Uuid $adminUserId): void
+    public function itCreatesNewAdmin(Uuid $adminId, Name $adminName, Text $adminEmail, Text $adminPassword): void
     {
         $user = Admin::create(
             $adminId->toString(),
             $adminName->firstName(),
             $adminName->lastName(),
             $adminEmail->toString(),
-            $adminUserId->toString()
+            $adminPassword->toString()
         );
 
         /** @var AggregateChanged[] $events */
         $events = $this->popRecordedEvents($user);
 
-        $this->assertCount(1, $events);
+        self::assertCount(1, $events);
 
-        /** @var Event\AdminCreated $event */
         $event = $events[0];
+        assert($event instanceof Event\AdminCreated);
 
-        $this->assertSame(Event\AdminCreated::class, $event->eventName());
-        $this->assertTrue($adminId->equals($event->adminId()));
-        $this->assertTrue($adminName->equals($event->adminName()));
-        $this->assertTrue($adminEmail->equals($event->adminEmail()));
-        $this->assertTrue($adminUserId->equals($event->adminUserId()));
+        self::assertSame(Event\AdminCreated::class, $event->eventName());
+        self::assertTrue($adminId->equals($event->adminId()));
+        self::assertTrue($adminName->equals($event->adminName()));
+        self::assertTrue($adminEmail->equals($event->adminEmail()));
+        self::assertTrue($adminPassword->equals($event->adminPassword()));
     }
 
     /**
@@ -54,15 +54,15 @@ class AdminTest extends TestCase
      * @param Uuid $adminId
      * @param Name $adminName
      * @param Text $adminEmail
-     * @param Uuid $adminUserId
+     * @param Text $adminPassword
      */
-    public function itChangesAdminName(Uuid $adminId, Name $adminName, Text $adminEmail, Uuid $adminUserId): void
+    public function itChangesAdminName(Uuid $adminId, Name $adminName, Text $adminEmail, Text $adminPassword): void
     {
         $admin = $this->reconstituteAdminFromHistory($this->newAdminCreated(
             $adminId,
             $adminName,
             $adminEmail,
-            $adminUserId
+            $adminPassword
         ));
 
         $name = Name::fromData($firstName = 'admin', $lastName = 'admin');
@@ -72,40 +72,82 @@ class AdminTest extends TestCase
         /** @var AggregateChanged[] $events */
         $events = $this->popRecordedEvents($admin);
 
-        $this->assertCount(1, $events);
+        self::assertCount(1, $events);
 
-        /** @var Event\AdminNameChanged $event */
         $event = $events[0];
+        assert($event instanceof Event\AdminNameChanged);
 
-        $this->assertSame(Event\AdminNameChanged::class, $event->eventName());
-        $this->assertTrue($event->adminName()->equals($name));
+        self::assertSame(Event\AdminNameChanged::class, $event->eventName());
+        self::assertTrue($event->adminName()->equals($name));
+    }
+
+    /**
+     * @test
+     * @dataProvider adminDataProvider
+     *
+     * @param Uuid $adminId
+     * @param Name $adminName
+     * @param Text $adminEmail
+     * @param Text $adminPassword
+     */
+    public function itRefreshesAdminLocale(Uuid $adminId, Name $adminName, Text $adminEmail, Text $adminPassword): void
+    {
+        $admin = $this->reconstituteAdminFromHistory($this->newAdminCreated(
+            $adminId,
+            $adminName,
+            $adminEmail,
+            $adminPassword
+        ));
+
+        $code = Code::fromCode('en');
+
+        $admin->refreshLocale($code->toString());
+
+        /** @var AggregateChanged[] $events */
+        $events = $this->popRecordedEvents($admin);
+
+        self::assertCount(1, $events);
+
+        $event = $events[0];
+        assert($event instanceof Event\AdminLocaleRefreshed);
+
+        self::assertSame(Event\AdminLocaleRefreshed::class, $event->eventName());
+        self::assertTrue($event->adminLocale()->equals($code));
     }
 
     /**
      * @param AggregateChanged ...$events
      *
-     * @return AggregateRoot|Admin
+     * @return Admin
      */
-    private function reconstituteAdminFromHistory(AggregateChanged ...$events): AggregateRoot
+    private function reconstituteAdminFromHistory(AggregateChanged ...$events): Admin
     {
-        return $this->reconstituteAggregateFromHistory(Admin::class, $events);
+        $admin = $this->reconstituteAggregateFromHistory(Admin::class, $events);
+
+        assert($admin instanceof Admin);
+
+        return $admin;
     }
 
     /**
      * @param Uuid $adminId
      * @param Name $adminName
      * @param Text $adminEmail
-     * @param Uuid $adminUserId
+     * @param Text $adminPassword
      *
      * @return Event\AdminCreated
      */
-    public function newAdminCreated(Uuid $adminId, Name $adminName, Text $adminEmail, Uuid $adminUserId): Event\AdminCreated
+    public function newAdminCreated(Uuid $adminId, Name $adminName, Text $adminEmail, Text $adminPassword): Event\AdminCreated
     {
-        return Event\AdminCreated::occur($adminId->toString(), [
+        $event = Event\AdminCreated::occur($adminId->toString(), [
             'first_name' => $adminName->firstName(),
             'last_name' => $adminName->lastName(),
             'email' => $adminEmail->toString(),
-            'user_id' => $adminUserId->toString(),
+            'password' => $adminPassword->toString(),
         ]);
+
+        assert($event instanceof Event\AdminCreated);
+
+        return $event;
     }
 }

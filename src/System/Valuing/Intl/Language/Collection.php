@@ -18,21 +18,19 @@ final class Collection extends ArrayIterator
     }
 
     /**
-     * @param Collection $other
+     * @param mixed $other
      *
      * @return bool
      */
-    public function equals($other): bool
+    public function equals(mixed $other): bool
     {
         if (false === $other instanceof self) {
             return false;
         }
 
-        /**
-         * @var string
-         * @var Char\Text $text
-         */
         foreach ($this->getArrayCopy() as $locale => $text) {
+            assert($text instanceof Char\Text);
+
             try {
                 $otherValue = $other->get($locale);
             } catch (InvalidArgumentException $e) {
@@ -55,7 +53,7 @@ final class Collection extends ArrayIterator
     public function get(string $locale): Char\Char
     {
         if (false === $this->offsetExists($locale)) {
-            throw new InvalidArgumentException('Not Found Locale string: '.$locale, $locale);
+            throw new InvalidArgumentException('Not Found Locale string: '.$locale, 500);
         }
 
         return $this->offsetGet($locale);

@@ -7,13 +7,13 @@ use App\Components\Account\Application\Query\RoleQuery;
 use App\Components\Account\Infrastructure\Entity\Role as RoleEntity;
 use App\Components\Account\Infrastructure\Query\Model\RoleFactory;
 
-class RoleEloquentQuery implements RoleQuery
+final class RoleEloquentQuery implements RoleQuery
 {
     /** @var RoleEntity */
-    private $db;
+    private RoleEntity $db;
 
     /** @var RoleFactory */
-    private $factory;
+    private RoleFactory $factory;
 
     /**
      * RoleEloquentQuery constructor.
@@ -34,8 +34,8 @@ class RoleEloquentQuery implements RoleQuery
     {
         $collection = new RoleCollection();
 
-        /** @var RoleEntity $entity */
         foreach ($this->db->newQuery()->with(['translations'])->orderBy('level')->get()->all() as $entity) {
+            assert($entity instanceof RoleEntity);
             $collection->add($this->factory->build($entity));
         }
 

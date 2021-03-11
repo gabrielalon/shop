@@ -5,7 +5,7 @@ namespace App\Components\Content\Application\Command\PublishBlogEntry;
 use App\Components\Content\Application\Command\BlogEntryCommand;
 use Carbon\Carbon;
 
-class PublishBlogEntry extends BlogEntryCommand
+final class PublishBlogEntry extends BlogEntryCommand
 {
     /** @var Carbon */
     private $publishAt;

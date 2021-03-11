@@ -36,7 +36,7 @@ final class Texts extends VO
         $text = Char\Text::fromString('');
 
         if (true === $this->value->offsetExists($locale)) {
-            /** @var Char\Text $text */
+            assert($text instanceof Char\Text);
             $text = $this->value->offsetGet($locale);
         }
 
@@ -44,11 +44,11 @@ final class Texts extends VO
     }
 
     /**
-     * @param Texts $other
+     * @param mixed $other
      *
      * @return bool
      */
-    public function equals($other): bool
+    public function equals(mixed $other): bool
     {
         if (false === $other instanceof self) {
             return false;
@@ -64,11 +64,8 @@ final class Texts extends VO
     {
         $data = [];
 
-        /**
-         * @var string
-         * @var Char\Text $text
-         */
         foreach ($this->getLocales() as $locale => $text) {
+            assert($text instanceof Char\Text);
             $data[$locale] = $text->toString();
         }
 

@@ -10,4 +10,12 @@ use MyCLabs\Enum\Enum;
 class RoleEnum extends Enum
 {
     protected const ADMIN = 'admin';
+
+    /**
+     * @return string[]
+     */
+    public static function adminRoles(): array
+    {
+        return [self::ADMIN()->getValue()];
+    }
 }

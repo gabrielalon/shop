@@ -2,15 +2,17 @@
 
 namespace App\Components\Account\Infrastructure\Projection;
 
+use App\Components\Account\Domain\Enum\RoleEnum;
 use App\Components\Account\Domain\Event;
 use App\Components\Account\Domain\Projection\AdminProjection;
 use App\Components\Account\Infrastructure\Entity\Admin as AdminEntity;
-use Illuminate\Database\Eloquent\Model;
+use App\Components\Account\Infrastructure\Entity\User as UserEntity;
+use Illuminate\Contracts\Container\BindingResolutionException;
 
-class AdminEloquentProjector implements AdminProjection
+final class AdminEloquentProjector implements AdminProjection
 {
     /** @var AdminEntity */
-    private $db;
+    private AdminEntity $db;
 
     /**
      * AdminEloquentProjector constructor.
@@ -24,16 +26,23 @@ class AdminEloquentProjector implements AdminProjection
 
     /**
      * {@inheritdoc}
+     *
+     * @throws BindingResolutionException
      */
     public function onAdminCreated(Event\AdminCreated $event): void
     {
-        $this->db->newQuery()->create([
+        $user = UserEntity::createFromEmail($event->adminEmail()->toString(), $event->adminPassword()->toString());
+
+        $entity = $this->db->newQuery()->create([
             'id' => $event->adminId()->toString(),
             'first_name' => $event->adminName()->firstName(),
             'last_name' => $event->adminName()->lastName(),
-            'email' => $event->adminEmail()->toString(),
-            'user_id' => $event->adminUserId()->toString(),
+            'user_id' => $user->id,
         ]);
+
+        assert($entity instanceof AdminEntity);
+
+        $entity->user->assignRoles(RoleEnum::adminRoles());
     }
 
     /**
@@ -41,7 +50,7 @@ class AdminEloquentProjector implements AdminProjection
      */
     public function onAdminNameChanged(Event\AdminNameChanged $event): void
     {
-        if ($entity = $this->findAdmin($event)) {
+        if ($entity = $this->db::findByUuid($event->adminId()->toString())) {
             $entity->update([
                 'first_name' => $event->adminName()->firstName(),
                 'last_name' => $event->adminName()->lastName(),
@@ -52,21 +61,23 @@ class AdminEloquentProjector implements AdminProjection
     /**
      * {@inheritdoc}
      */
-    public function onAdminRemoved(Event\AdminRemoved $event): void
+    public function onAdminLocaleRefreshed(Event\AdminLocaleRefreshed $event): void
     {
-        if ($entity = $this->findAdmin($event)) {
-            $entity->user->delete();
-            $entity->delete();
+        if ($entity = $this->db::findByUuid($event->adminId()->toString())) {
+            $entity->user->update(['locale' => $event->adminLocale()->toString()]);
         }
     }
 
     /**
-     * @param Event\AdminEvent $event
+     * {@inheritdoc}
      *
-     * @return AdminEntity|Model|null
+     * @throws \Exception
      */
-    public function findAdmin(Event\AdminEvent $event): ?AdminEntity
+    public function onAdminRemoved(Event\AdminRemoved $event): void
     {
-        return AdminEntity::findByUuid($event->adminId()->toString());
+        if ($entity = $this->db::findByUuid($event->adminId()->toString())) {
+            $entity->user->delete();
+            $entity->delete();
+        }
     }
 }

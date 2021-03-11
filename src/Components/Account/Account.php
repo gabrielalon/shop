@@ -2,51 +2,43 @@
 
 namespace App\Components\Account;
 
-use App\Components\Account\Application\Command\AssignUserRoles\AssignUserRoles;
-use App\Components\Account\Application\Command\ChangeAdminName\ChangeAdminName;
 use App\Components\Account\Application\Command\ChangeUserPassword\ChangeUserPassword;
-use App\Components\Account\Application\Command\CreateAdmin\CreateAdmin;
-use App\Components\Account\Application\Command\CreateUser\CreateUser;
-use App\Components\Account\Application\Command\RefreshUserLocale\RefreshUserLocale;
 use App\Components\Account\Application\Command\RefreshUserRememberToken\RefreshUserRememberToken;
-use App\Components\Account\Application\Command\RemoveAdmin\RemoveAdmin;
 use App\Components\Account\Application\Query\AdminQuery;
 use App\Components\Account\Application\Query\RoleQuery;
 use App\Components\Account\Application\Query\UserQuery;
-use App\Components\Account\Domain\AdminSpecification;
-use App\Components\Account\Domain\Enum\RoleEnum;
-use App\System\Eloquent\Connection;
+use App\Components\Account\Application\Saga\Scenario;
+use App\Components\Account\Application\Validator\AdminValidatorFactory;
+use App\Components\Account\Application\Validator\UserValidatorFactory;
 use App\System\Messaging\MessageBus;
-use App\System\Messaging\Query\Query;
+use App\System\Messaging\Saga\SagaProcessor;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Factory;
 use Webmozart\Assert\Assert;
 
-class Account
+final class Account
 {
-    /** @var Connection */
-    private $connection;
+    /** @var Factory */
+    private Factory $factory;
 
     /** @var MessageBus */
-    private $messageBus;
+    private MessageBus $messageBus;
 
-    /** @var AdminSpecification */
-    private $adminSpecification;
+    /** @var SagaProcessor */
+    private SagaProcessor $sagaProcessor;
 
     /**
      * Account constructor.
      *
-     * @param Connection         $connection
-     * @param MessageBus         $messageBus
-     * @param AdminSpecification $adminSpecification
+     * @param Factory       $factory
+     * @param MessageBus    $messageBus
+     * @param SagaProcessor $sagaProcessor
      */
-    public function __construct(
-        Connection $connection,
-        MessageBus $messageBus,
-        AdminSpecification $adminSpecification
-    ) {
-        $this->connection = $connection;
+    public function __construct(Factory $factory, MessageBus $messageBus, SagaProcessor $sagaProcessor)
+    {
+        $this->factory = $factory;
         $this->messageBus = $messageBus;
-        $this->adminSpecification = $adminSpecification;
+        $this->sagaProcessor = $sagaProcessor;
     }
 
     /**
@@ -55,6 +47,7 @@ class Account
      */
     public function changeUserPassword(string $userId, string $password): void
     {
+        $this->assertUserIdExists($userId);
         $this->messageBus->handle(new ChangeUserPassword($userId, $password));
         $this->refreshUserRememberToken($userId, Str::random(60));
     }
@@ -68,7 +61,7 @@ class Account
      *
      * @return string
      *
-     * @throws \InvalidArgumentException
+     * @throws \Exception
      */
     public function createAdmin(
         string $firstName,
@@ -77,24 +70,16 @@ class Account
         string $password,
         string $locale
     ): string {
-        Assert::false($this->adminSpecification->isUniqueEmailSatisfied($email), 'Admin is registered on given email');
+        $this->sagaProcessor->run(new Scenario\AdminCreate(
+            $adminId = Str::uuid(),
+            $firstName,
+            $lastName,
+            $email,
+            $password,
+            $locale
+        ));
 
-        $id = Str::uuid()->toString();
-        $userId = Str::uuid()->toString();
-
-        try {
-            $this->connection->beginTransaction();
-            $this->messageBus->handle(new CreateUser($userId, $email, $password));
-            $this->messageBus->handle(new CreateAdmin($id, $firstName, $lastName, $email, $userId));
-            $this->messageBus->handle(new AssignUserRoles($userId, [RoleEnum::ADMIN()->getValue()]));
-            $this->messageBus->handle(new RefreshUserLocale($userId, $locale));
-            $this->connection->commit();
-        } catch (\Exception $exception) {
-            $this->connection->rollBack();
-            throw $exception;
-        }
-
-        return $id;
+        return $adminId;
     }
 
     /**
@@ -104,45 +89,8 @@ class Account
      */
     public function remove(string $adminId): void
     {
-        $this->askAdmin()->findAdminById($adminId);
-
-        try {
-            $this->connection->beginTransaction();
-            $this->messageBus->handle(new RemoveAdmin($adminId));
-            $this->connection->commit();
-        } catch (\Exception $exception) {
-            $this->connection->rollBack();
-            throw $exception;
-        }
-    }
-
-    /**
-     * @param string $adminId
-     * @param string $fullName
-     * @param string $locale
-     * @param array  $roles
-     *
-     * @throws \Exception
-     */
-    public function updateAdmin(
-        string $adminId,
-        string $fullName,
-        string $locale,
-        array $roles
-    ): void {
-        list($firstName, $lastName) = explode(' ', $fullName);
-
-        try {
-            $this->connection->beginTransaction();
-            $userId = $this->askAdmin()->findAdminById($adminId)->userId();
-            $this->messageBus->handle(new ChangeAdminName($adminId, $firstName, $lastName));
-            $this->messageBus->handle(new AssignUserRoles($userId, $roles));
-            $this->messageBus->handle(new RefreshUserLocale($userId, $locale));
-            $this->connection->commit();
-        } catch (\Exception $exception) {
-            $this->connection->rollBack();
-            throw $exception;
-        }
+        $this->assertAdminIdExists($adminId);
+        $this->sagaProcessor->run(new Scenario\AdminRemove($adminId));
     }
 
     /**
@@ -151,30 +99,85 @@ class Account
      */
     public function refreshUserRememberToken(string $userId, string $token): void
     {
+        $this->assertUserIdExists($userId);
         $this->messageBus->handle(new RefreshUserRememberToken($userId, $token));
     }
 
     /**
-     * @return AdminQuery|Query
+     * @param string $adminId
+     *
+     * @throws \InvalidArgumentException
+     */
+    private function assertAdminIdExists(string $adminId): void
+    {
+        Assert::false(
+            $this->adminValidator()->exists($adminId)->fails(),
+            \sprintf('Admin does not exist on given id: %s.', $adminId)
+        );
+    }
+
+    /**
+     * @param string $userId
+     *
+     * @throws \InvalidArgumentException
+     */
+    private function assertUserIdExists(string $userId): void
+    {
+        Assert::false(
+            $this->userValidator()->exists($userId)->fails(),
+            \sprintf('User does not exist on given id: %s.', $userId)
+        );
+    }
+
+    /**
+     * @return AdminValidatorFactory
+     */
+    public function adminValidator(): AdminValidatorFactory
+    {
+        return AdminValidatorFactory::initialize($this->factory);
+    }
+
+    /**
+     * @return UserValidatorFactory
+     */
+    public function userValidator(): UserValidatorFactory
+    {
+        return UserValidatorFactory::initialize($this->factory);
+    }
+
+    /**
+     * @return AdminQuery
      */
     public function askAdmin(): AdminQuery
     {
-        return $this->messageBus->query(AdminQuery::class);
+        $query = $this->messageBus->query(AdminQuery::class);
+
+        assert($query instanceof AdminQuery);
+
+        return $query;
     }
 
     /**
-     * @return RoleQuery|Query
+     * @return RoleQuery
      */
     public function askRole(): RoleQuery
     {
-        return $this->messageBus->query(RoleQuery::class);
+        $query = $this->messageBus->query(RoleQuery::class);
+
+        assert($query instanceof RoleQuery);
+
+        return $query;
     }
 
     /**
-     * @return UserQuery|Query
+     * @return UserQuery
      */
     public function askUser(): UserQuery
     {
-        return $this->messageBus->query(UserQuery::class);
+        $query = $this->messageBus->query(UserQuery::class);
+
+        assert($query instanceof UserQuery);
+
+        return $query;
     }
 }

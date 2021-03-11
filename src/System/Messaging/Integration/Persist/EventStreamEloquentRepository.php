@@ -2,6 +2,7 @@
 
 namespace App\System\Messaging\Integration\Persist;
 
+use App\System\Illuminate\Service\AuthService;
 use App\System\Messaging\Aggregate\AggregateChanged;
 use App\System\Messaging\Aggregate\AggregateId;
 use App\System\Messaging\Event\EventStreamRepository;
@@ -12,21 +13,26 @@ use Jenssegers\Agent\Agent;
 class EventStreamEloquentRepository implements EventStreamRepository
 {
     /** @var Agent */
-    private $agent;
+    private Agent $agent;
 
     /** @var JsonSerializer */
-    private $serializer;
+    private JsonSerializer $serializer;
+
+    /** @var AuthService */
+    private AuthService $authService;
 
     /**
      * EventStreamEloquentRepository constructor.
      *
      * @param Agent          $agent
      * @param JsonSerializer $serializer
+     * @param AuthService    $authService
      */
-    public function __construct(Agent $agent, JsonSerializer $serializer)
+    public function __construct(Agent $agent, JsonSerializer $serializer, AuthService $authService)
     {
         $this->agent = $agent;
         $this->serializer = $serializer;
+        $this->authService = $authService;
     }
 
     /**
@@ -37,7 +43,7 @@ class EventStreamEloquentRepository implements EventStreamRepository
         EventStreamEntity::query()->create(array_merge($event->baseData(), [
             'payload' => $this->serializer->encode($event->payload()),
             'metadata' => $this->serializer->encode($this->extractMetadata()),
-            'user_id' => auth()->check() ? auth()->user()->getAuthIdentifier() : null,
+            'user_id' => $this->authService->check() ? $this->authService->user()->id() : null,
         ]));
     }
 
@@ -91,11 +97,11 @@ class EventStreamEloquentRepository implements EventStreamRepository
     }
 
     /**
-     * @return string|null
+     * @return string
      */
-    private function clientHost(): ?string
+    private function clientHost(): string
     {
-        return request()->getHost();
+        return (string) request()->getHost();
     }
 
     /**

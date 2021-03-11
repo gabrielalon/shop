@@ -2,25 +2,19 @@
 
 namespace App\Integrations\Mapbox;
 
-/**
- * Basic response from Mapbox API.
- *
- * @author twbell
- * @license Apache 2.0
- */
 abstract class MapboxResponse extends \ArrayIterator
 {
-    protected $json = null; //string
-    protected $info;
-    protected $body = [];
-    protected $headers = [];
+    protected string $json;
+    protected array $info;
+    protected array $body = [];
+    protected array $headers = [];
 
     /**
      * Constructor, parses return values from mapbox::request().
      *
-     * @param array response The JSON response String returned by Mapbox
+     * @param array $apiResponse The JSON response String returned by Mapbox
      */
-    public function __construct($apiResponse = [])
+    public function __construct(array $apiResponse = [])
     {
         try {
             $this->json = $apiResponse['body']; //raw json
@@ -38,18 +32,16 @@ abstract class MapboxResponse extends \ArrayIterator
     /**
      * Parses the entire response, incl metadata.
      *
-     * @param array apiResponse response from curl
-     *
      * @return void
      */
-    abstract protected function parseResponse();
+    abstract protected function parseResponse(): void;
 
     /**
      * Get HTTP response code.
      *
      * @return int
      */
-    public function getResponseCode()
+    final public function getResponseCode(): int
     {
         return $this->info['code'];
     }
@@ -58,13 +50,9 @@ abstract class MapboxResponse extends \ArrayIterator
      * Test for success (200 status return)
      * Note this tests for a successful http call, not a successful program operation.
      */
-    public function success()
+    final public function success(): bool
     {
-        if (200 == $this->info['code']) {
-            return true;
-        } else {
-            return false;
-        }
+        return 200 === $this->info['code'];
     }
 
     /**
@@ -72,7 +60,7 @@ abstract class MapboxResponse extends \ArrayIterator
      *
      * @return string
      */
-    public function getJson()
+    final public function json(): string
     {
         return $this->json;
     }
@@ -82,7 +70,7 @@ abstract class MapboxResponse extends \ArrayIterator
      *
      * @return int
      */
-    public function size()
+    final public function size(): int
     {
         return count($this);
     }
@@ -93,9 +81,9 @@ abstract class MapboxResponse extends \ArrayIterator
      *
      * @return string
      */
-    public function toString()
+    final public function toString(): string
     {
-        return $this->getJson();
+        return $this->json();
     }
 
     /**
@@ -103,7 +91,7 @@ abstract class MapboxResponse extends \ArrayIterator
      *
      * @return string
      */
-    public function getRequest()
+    final public function getRequest(): string
     {
         return $this->info['request']['unencoded'];
     }
@@ -113,7 +101,7 @@ abstract class MapboxResponse extends \ArrayIterator
      *
      * @return string
      */
-    public function getRawRequest()
+    final public function getRawRequest(): string
     {
         return $this->info['request']['encoded'];
     }
@@ -121,9 +109,9 @@ abstract class MapboxResponse extends \ArrayIterator
     /**
      * Get http headers returned by Mapbox.
      *
-     * @return string
+     * @return array
      */
-    public function getHeaders()
+    final public function getHeaders(): array
     {
         return $this->headers;
     }
@@ -131,9 +119,9 @@ abstract class MapboxResponse extends \ArrayIterator
     /**
      * Get information on the call.
      *
-     * @return string
+     * @return array
      */
-    public function getInfo()
+    final public function info(): array
     {
         return $this->info;
     }

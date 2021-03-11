@@ -11,23 +11,15 @@ use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia as HasMediaTrait;
 use Spatie\MediaLibrary\MediaCollections\Exceptions;
 
-class MediaSpatieService implements MediaService
+final class MediaSpatieService implements MediaService
 {
-    public function __call($name, $arguments): string
-    {
-        if (true === MediaEnum::isValidKey($name)) {
-            return (string) MediaEnum::toArray()[$name];
-        }
-
-        return '';
-    }
-
     /**
      * {@inheritdoc}
      */
     public function setMedia(Model $model, UploadedFile $image, MediaEnum $collection, array $headers = []): void
     {
-        /** @var HasMedia|HasMediaTrait $model */
+        assert($model instanceof HasMedia);
+
         if ($model->hasMedia($collection->getValue())) {
             $this->deleteMedia($model, $collection);
         }
@@ -61,10 +53,12 @@ class MediaSpatieService implements MediaService
      */
     public function deleteMedia(Model $model, MediaEnum $collection): void
     {
-        /** @var HasMedia|HasMediaTrait $model */
+        assert($model instanceof HasMedia);
+
         $media = $model->getMedia($collection->getValue());
 
         try {
+            /* @var HasMediaTrait $model */
             $model->deleteMedia($media->first());
         } catch (Exceptions\MediaCannotBeDeleted $exception) {
         }

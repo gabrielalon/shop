@@ -4,15 +4,13 @@ namespace App\Components\Account\Infrastructure\Projection;
 
 use App\Components\Account\Domain\Event;
 use App\Components\Account\Domain\Projection\UserProjection;
-use App\Components\Account\Infrastructure\Entity\Role;
 use App\Components\Account\Infrastructure\Entity\User as UserEntity;
-use App\Components\Account\Infrastructure\Entity\UserRole;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Contracts\Container\BindingResolutionException;
 
-class UserEloquentProjector implements UserProjection
+final class UserEloquentProjector implements UserProjection
 {
     /** @var UserEntity */
-    private $db;
+    private UserEntity $db;
 
     /**
      * UserEloquentProjector constructor.
@@ -26,15 +24,16 @@ class UserEloquentProjector implements UserProjection
 
     /**
      * {@inheritdoc}
+     *
+     * @throws BindingResolutionException
      */
     public function onUserCreated(Event\UserCreated $event): void
     {
-        $this->db->newQuery()->create([
-            'id' => $event->userId()->toString(),
-            'login' => $event->userLogin()->toString(),
-            'password' => $event->userPassword()->toString(),
-            'locale' => locale()->current(),
-        ]);
+        $this->db::createFromLogin(
+            $event->userId()->toString(),
+            $event->userLogin()->toString(),
+            $event->userPassword()->toString()
+        );
     }
 
     /**
@@ -42,7 +41,7 @@ class UserEloquentProjector implements UserProjection
      */
     public function onUserLocaleRefreshed(Event\UserLocaleRefreshed $event): void
     {
-        if ($user = $this->findUser($event)) {
+        if ($user = $this->db::findByUuid($event->userId()->toString())) {
             $user->update(['locale' => $event->userLocale()->toString()]);
         }
     }
@@ -52,7 +51,7 @@ class UserEloquentProjector implements UserProjection
      */
     public function onUserPasswordChanged(Event\UserPasswordChanged $event): void
     {
-        if ($user = $this->findUser($event)) {
+        if ($user = $this->db::findByUuid($event->userId()->toString())) {
             $user->update(['password' => $event->userPassword()->toString()]);
         }
     }
@@ -62,7 +61,7 @@ class UserEloquentProjector implements UserProjection
      */
     public function onUserRememberTokenRefreshed(Event\UserRememberTokenRefreshed $event): void
     {
-        if ($user = $this->findUser($event)) {
+        if ($user = $this->db::findByUuid($event->userId()->toString())) {
             $user->update(['remember_token' => $event->userRememberToken()->toString()]);
         }
     }
@@ -72,22 +71,8 @@ class UserEloquentProjector implements UserProjection
      */
     public function onUserRolesAssigned(Event\UserRolesAssigned $event): void
     {
-        UserRole::query()->where(['user_id' => $event->userId()->toString()])->delete();
-        foreach ($event->userRoles()->roles() as $type) {
-            UserRole::query()->updateOrCreate([
-                'user_id' => $event->userId()->toString(),
-                'role_id' => Role::query()->updateOrCreate(['type' => $type])->getKey(),
-            ]);
+        if ($user = $this->db::findByUuid($event->userId()->toString())) {
+            $user->assignRoles($event->userRoles()->roles());
         }
-    }
-
-    /**
-     * @param Event\UserEvent $event
-     *
-     * @return UserEntity|Model|null
-     */
-    public function findUser(Event\UserEvent $event): ?UserEntity
-    {
-        return UserEntity::findByUuid($event->userId()->toString());
     }
 }

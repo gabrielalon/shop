@@ -8,20 +8,20 @@ use Carbon\Carbon;
 
 final class BlogEntry extends AggregateRoot
 {
-    /** @var VO\Identity\Uuids */
-    private $categories;
+    /** @var VO\Identity\Uuids|null */
+    private ?VO\Identity\Uuids $categories;
 
-    /** @var VO\Option\Check */
-    private $active;
+    /** @var VO\Option\Check|null */
+    private ?VO\Option\Check $active;
 
-    /** @var Carbon */
-    private $publishAt;
+    /** @var Carbon|null */
+    private ?Carbon $publishAt;
 
-    /** @var VO\Intl\Language\Texts */
-    private $name;
+    /** @var VO\Intl\Language\Texts|null */
+    private ?VO\Intl\Language\Texts $name;
 
-    /** @var VO\Intl\Language\Contents */
-    private $description;
+    /** @var VO\Intl\Language\Contents|null */
+    private ?VO\Intl\Language\Contents $description;
 
     /**
      * @param VO\Identity\Uuid $id

@@ -11,21 +11,26 @@ use App\System\Messaging\Integration\Service\CallbackSerializer;
 use App\System\Messaging\Snapshot\Snapshot;
 use App\System\Messaging\Snapshot\SnapshotRepository;
 
-class SnapshotEloquentRepository implements SnapshotRepository
+final class SnapshotEloquentRepository implements SnapshotRepository
 {
+    /** @var SnapshotEntity */
+    private SnapshotEntity $db;
+
     /** @var CallbackSerializer */
-    private $serializer;
+    private CallbackSerializer $serializer;
 
     /** @var AggregateTranslator */
-    private $aggregateTranslator;
+    private AggregateTranslator $aggregateTranslator;
 
     /**
      * SnapshotEloquentRepository constructor.
      *
+     * @param SnapshotEntity     $db
      * @param CallbackSerializer $serializer
      */
-    public function __construct(CallbackSerializer $serializer)
+    public function __construct(SnapshotEntity $db, CallbackSerializer $serializer)
     {
+        $this->db = $db;
         $this->serializer = $serializer;
         $this->aggregateTranslator = new AggregateTranslator(AggregateRootDecorator::newInstance());
     }
@@ -35,7 +40,7 @@ class SnapshotEloquentRepository implements SnapshotRepository
      */
     public function save(Snapshot $snapshot): void
     {
-        SnapshotEntity::query()->updateOrCreate($this->extractCreateData($snapshot), [
+        $this->db->newQuery()->updateOrCreate($this->extractCreateData($snapshot), [
             'last_version' => $snapshot->lastVersion(),
             'aggregate' => $this->serializer->serialize($snapshot->aggregateRoot()),
         ]);
@@ -62,11 +67,11 @@ class SnapshotEloquentRepository implements SnapshotRepository
         $condition = ['aggregate_id' => $aggregateId->toString(), 'aggregate_type' => $aggregateType];
 
         try {
-            /** @var SnapshotEntity $entity */
-            $entity = SnapshotEntity::query()->where($condition)->firstOrFail();
+            $entity = $this->db->newQuery()->where($condition)->firstOrFail();
+            assert($entity instanceof SnapshotEntity);
 
-            /** @var AggregateRoot $aggregateRoot */
             $aggregateRoot = $this->serializer->unserialize($entity->aggregate);
+            assert($aggregateRoot instanceof AggregateRoot);
 
             return new Snapshot($aggregateRoot, $entity->last_version);
         } catch (\Exception $e) {

@@ -2,6 +2,7 @@
 
 namespace App\Components\Account\Infrastructure\Entity;
 
+use App\Components\Account\Domain\Enum\RoleEnum;
 use App\System\Eloquent\Contracts\HasUuid;
 use App\System\Eloquent\Contracts\HasUuidTrait;
 use Astrotomic\Translatable\Contracts\Translatable as TranslatableContract;
@@ -19,13 +20,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @property Collection $users
  * @property Collection $permissions
  */
-class Role extends Eloquent implements HasUuid, TranslatableContract
+final class Role extends Eloquent implements HasUuid, TranslatableContract
 {
     use HasUuidTrait;
     use Translatable;
 
     /** @var string[] */
-    public $translatedAttributes = ['description'];
+    public array $translatedAttributes = ['description'];
 
     /** @var bool */
     public $timestamps = false;
@@ -98,5 +99,19 @@ class Role extends Eloquent implements HasUuid, TranslatableContract
         }
 
         return $descriptions;
+    }
+
+    /**
+     * @param RoleEnum $type
+     *
+     * @return Role
+     */
+    public static function findByType(RoleEnum $type): Role
+    {
+        $entity = self::query()->firstOrCreate(['type' => $type->getValue()]);
+
+        assert($entity instanceof self);
+
+        return $entity;
     }
 }

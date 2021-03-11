@@ -22,8 +22,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property Carbon     $publish_at
  * @property Collection $categories
  * @property Collection $withCategories
+ *
+ * @method static BlogEntry|null findByUuid(string $uuid)
  */
-class BlogEntry extends Eloquent implements HasUuid, TranslatableContract
+final class BlogEntry extends Eloquent implements HasUuid, TranslatableContract
 {
     use Translatable;
     use HasFactory;
@@ -34,7 +36,7 @@ class BlogEntry extends Eloquent implements HasUuid, TranslatableContract
     public $incrementing = false;
 
     /** @var string[] */
-    public $translatedAttributes = ['name', 'description'];
+    public array $translatedAttributes = ['name', 'description'];
 
     /** @var string */
     protected $table = 'blog_entry';
@@ -54,7 +56,7 @@ class BlogEntry extends Eloquent implements HasUuid, TranslatableContract
     /**
      * {@inheritdoc}
      */
-    protected static function newFactory()
+    protected static function newFactory(): BlogEntryFactory
     {
         return BlogEntryFactory::new();
     }
@@ -94,7 +96,7 @@ class BlogEntry extends Eloquent implements HasUuid, TranslatableContract
         $names = [];
 
         foreach (LocaleEnum::values() as $locale) {
-            $names[$locale->getValue()] = $this->getTranslationOrNew($locale->getValue())->name;
+            $names[$locale->getValue()] = $this->getTranslationOrNew($locale)->getAttributeValue('name');
         }
 
         return $names;
@@ -108,7 +110,7 @@ class BlogEntry extends Eloquent implements HasUuid, TranslatableContract
         $names = [];
 
         foreach (LocaleEnum::values() as $locale) {
-            $names[$locale->getValue()] = $this->getTranslationOrNew($locale->getValue())->description;
+            $names[$locale->getValue()] = $this->getTranslationOrNew($locale)->getAttributeValue('description');
         }
 
         return $names;

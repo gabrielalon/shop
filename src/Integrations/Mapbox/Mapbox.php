@@ -2,81 +2,42 @@
 
 namespace App\Integrations\Mapbox;
 
-/**
- * Requires PHP5, SPL (for autoloading) and cURL.
- */
-
-/**
- * Represents the public Mapbox API. Supports running queries against Mapbox and inspecting the response.
- *
- * @author twbell
- * @license Apache 2.0
- */
-class Mapbox
+final class Mapbox
 {
-    protected $home = 'https://api.mapbox.com'; //URL base
-    protected $driverVersion = 'mapbox-php-driver-v0.1.0';  //current version of the php wrapper
-    protected $versions = ['geocoder' => 'v5']; //versions for endpoint
-    protected $debug = false; //debug flag
-    protected $token; //access token
-    protected $curlTimeout = 0; //maximum number of seconds for the network function to execute (0 = no timeout)
-    protected $connectTimeout = 0; //maximum number of seconds to connect to the server (0 = no timeout)
-    protected $placeTypes = ['country', 'region', 'postcode', 'place', 'neighborhood', 'address', 'poi'];
-    protected $permanentGeocodes = false; //changes geocding endpoint when flipped
+    /** @var string */
+    private string $home = 'https://api.mapbox.com'; //URL base
+
+    /** @var string */
+    private string $driverVersion = 'mapbox-php-driver-v0.1.0';  //current version of the php wrapper
+
+    /** @var string[] */
+    private array $versions = ['geocoder' => 'v5']; //versions for endpoint
+
+    /** @var bool */
+    private bool $debug = false; //debug flag
+
+    /** @var bool */
+    private bool $permanentGeocodes = false; //changes geocding endpoint when flipped
+
+    /** @var MapboxConfig */
+    private MapboxConfig $config;
 
     /**
-     * Constructor. Creates authenticated access to Mapbox.
+     * Mapbox constructor.
      *
-     * @param string token your Mapbox token
+     * @param MapboxConfig $config
      */
-    public function __construct($token)
+    public function __construct(MapboxConfig $config)
     {
-        $this->token = $token;
-    }
-
-    /** Gets token **/
-    public function getToken()
-    {
-        return $this->token;
+        $this->config = $config;
     }
 
     /**
-     * Sets version for endpoint.
-     *
-     * @param string endpoint endpoint name e.g. 'geocoder'
-     * @param string endpoint version e.g. 'v4'
-     **/
-    public function setEndpointVersion($endpoint, $version)
-    {
-        $this->versions[$endpoint] = $version;
-    }
-
-    /**
-     * Turns on debugging for output to stderr.
+     * @return string
      */
-    public function debug()
+    private function getGeocoderDataSet(): string
     {
-        $this->debug = true;
-    }
-
-    /**
-     * Change the base URL at which to contact Mapbox's API. This
-     * may be useful if you want to talk to a test or staging
-     * server withou changing config
-     * Example value: <tt>http://staging.api.v3.Mapbox.com/t/</tt>.
-     *
-     * @param string $urlBase the base URL at which to contact Mapbox's API
-     *
-     * @return void
-     */
-    public function setHome($urlBase)
-    {
-        $this->home = $urlBase;
-    }
-
-    protected function getGeocoderDataSet()
-    {
-        if (true == $this->permanentGeocodes) {
+        if (true === $this->permanentGeocodes) {
             $dataSet = 'mapbox.places-permanent';
         } else {
             $dataSet = 'mapbox.places';
@@ -85,12 +46,23 @@ class Mapbox
         return $dataSet;
     }
 
-    protected function urlForGeocode($query)
+    /**
+     * @param string $query
+     *
+     * @return string
+     */
+    private function urlForGeocode(string $query): string
     {
         return $this->home.'/geocoding/'.$this->versions['geocoder'].'/'.$this->getGeocoderDataSet().'/'.urlencode($query).'.json';
     }
 
-    protected function urlForReverseGeocode($longitude, $latitude)
+    /**
+     * @param float $longitude
+     * @param float $latitude
+     *
+     * @return string
+     */
+    private function urlForReverseGeocode(float $longitude, float $latitude): string
     {
         return $this->home.'/geocoding/'.$this->versions['geocoder'].'/'.$this->getGeocoderDataSet().'/'.$longitude.','.$latitude.'.json';
     }
@@ -98,13 +70,16 @@ class Mapbox
     /**
      * Geocodes by returning a response containing the address nearest a given point.
      *
-     * @param string query The unstructured address or place-name
-     * @param array types containing n of country, region, postcode, place, neighborhood, address, or poi
-     * @param array proximity with keys 'longitude' , 'latitude'
+     * @param string|null $query     The unstructured address or place-name
+     * @param array       $types     containing n of country, region, postcode, place, neighborhood, address, or poi
+     * @param array       $proximity with keys 'longitude' , 'latitude'
      *
-     * @return GeocodeResponse response of a geocode query against Mapbox
+     * @return GeocodeResponse|null response of a geocode query against Mapbox
+     *
+     * @throws MapboxApiException
+     * @throws \Exception
      */
-    public function geocode($query, $types = [], $proximity = [])
+    public function geocode(?string $query = null, array $types = [], array $proximity = []): ?GeocodeResponse
     {
         $params = [];
         if (empty($query)) {
@@ -122,23 +97,37 @@ class Mapbox
         return new GeocodeResponse($this->request($url, 'GET', $params));
     }
 
-    /** Different endpoint for permanent geocodes **/
-    public function geocodePermanent($query, $types = [], $proximity = [])
+    /**
+     * Different endpoint for permanent geocodes.
+     *
+     * @param string|null $query
+     * @param array       $types
+     * @param array       $proximity
+     *
+     * @return GeocodeResponse|null
+     *
+     * @throws MapboxApiException
+     */
+    public function geocodePermanent(?string $query = null, array $types = [], array $proximity = []): ?GeocodeResponse
     {
         $this->permanentGeocodes = true;
 
-        return $this->geocode($query, $types = [], $proximity = []);
+        return $this->geocode($query, $types, $proximity);
     }
 
     /**
      * Reverse geocodes by returning a response containing the resolved entities.
      *
-     * @param obj point The point for which the nearest address is returned
-     * @param string tableName Optional. The tablenae to geocode against.  Currently only 'places' is supported.
+     * @param float $longitude point The point for which the nearest address is returned
+     * @param float $latitude
+     * @param array $types
      *
      * @return GeocodeResponse response of running a reverse geocode query for <tt>point</tt> against Mapbox
+     *
+     * @throws MapboxApiException
+     * @throws \Exception
      */
-    public function reverseGeocode($longitude, $latitude, $types = [])
+    public function reverseGeocode(float $longitude, float $latitude, array $types = []): GeocodeResponse
     {
         $params = [];
         $url = $this->urlForReverseGeocode($longitude, $latitude);
@@ -154,18 +143,18 @@ class Mapbox
      *
      * @param string $urlStr        unsigned URL request
      * @param string $requestMethod
-     * @param null   $params
+     * @param array  $params
      *
      * @return array ex: array ('headers'=>array(), 'body'=>string)
      *
      * @throws MapboxApiException
      */
-    protected function request($urlStr, $requestMethod = 'GET', $params = null)
+    private function request(string $urlStr, string $requestMethod = 'GET', array $params = []): array
     {
         //custom input headers
         $curlOptions[CURLOPT_HTTPHEADER] = [];
         $curlOptions[CURLOPT_HTTPHEADER][] = 'X-Mapbox-Lib: '.$this->driverVersion;
-        if ('POST' == $requestMethod) {
+        if ('POST' === $requestMethod) {
             $curlOptions[CURLOPT_HTTPHEADER][] = 'Content-Type: '.'application/x-www-form-urlencoded';
         }
 
@@ -174,8 +163,8 @@ class Mapbox
         $curlOptions[CURLOPT_HEADER] = 1;
 
         //other curl options
-        $curlOptions[CURLOPT_CONNECTTIMEOUT] = $this->connectTimeout; //connection timeout
-        $curlOptions[CURLOPT_TIMEOUT] = $this->curlTimeout; //execution timeout
+        $curlOptions[CURLOPT_CONNECTTIMEOUT] = $this->config->connectionTimeout(); //connection timeout
+        $curlOptions[CURLOPT_TIMEOUT] = $this->config->curlTimeout(); //execution timeout
         $curlOptions[CURLOPT_RETURNTRANSFER] = 1; //return contents on success
 
         //format query parameters and append
@@ -195,9 +184,9 @@ class Mapbox
         //url formatting
         if ($formattedParams) {
             $urlStr .= '?'.$formattedParams;
-            $url = $urlStr.'&access_token='.$this->token;
+            $url = $urlStr.'&access_token='.$this->config->accessToken();
         } else {
-            $url = $urlStr.'?access_token='.$this->token;
+            $url = $urlStr.'?access_token='.$this->config->accessToken();
         }
 
         //format cURL
@@ -284,43 +273,5 @@ class Mapbox
         $res['body'] = $result;
 
         return $res;
-    }
-
-    /**
-     * Autoloader for file dependencies
-     * Called by spl_autoload_register() to avoid conflicts with autoload() methods from other libs.
-     */
-    public static function mapboxAutoload($className)
-    {
-        $filename = dirname(__FILE__).'/'.$className.'.php';
-        // don't interfere with other classloaders
-        if (!file_exists($filename)) {
-            return;
-        }
-        include $filename;
-    }
-
-    /**
-     * Sets maximum number of seconds to connect to the server before bailing.
-     *
-     * @param int secs timeout in seconds
-     */
-    public function setConnectTimeout($secs)
-    {
-        $this->connectTimeout = $secs;
-
-        return $this;
-    }
-
-    /**
-     * Sets maximum number of seconds to the network function to execute.
-     *
-     * @param int secs timeout in seconds
-     */
-    public function setCurlTimeout($secs)
-    {
-        $this->curlTimeout = $secs;
-
-        return $this;
     }
 }

@@ -22,7 +22,7 @@ class AdminQueryTest extends TestCase
         $this->assertEquals($entity->user_id, $admin->userId());
         $this->assertEquals($entity->first_name, $admin->firstName());
         $this->assertEquals($entity->last_name, $admin->lastName());
-        $this->assertEquals($entity->email, $admin->email());
+        $this->assertEquals($entity->user->email, $admin->email());
     }
 
     /**
@@ -48,7 +48,7 @@ class AdminQueryTest extends TestCase
         $this->assertEquals($entity->user_id, $admin->userId());
         $this->assertEquals($entity->first_name, $admin->firstName());
         $this->assertEquals($entity->last_name, $admin->lastName());
-        $this->assertEquals($entity->email, $admin->email());
+        $this->assertEquals($entity->user->email, $admin->email());
     }
 
     /**

@@ -5,13 +5,13 @@ namespace App\System\Messaging\Event;
 use App\System\Messaging\Aggregate\AggregateChanged;
 use Psr\Container\ContainerInterface;
 
-class EventPublisher
+final class EventPublisher
 {
     /** @var string[][] */
-    private $map;
+    private array $map;
 
     /** @var ContainerInterface */
-    private $container;
+    private ContainerInterface $container;
 
     /**
      * EventPublisher constructor.
@@ -20,6 +20,7 @@ class EventPublisher
      */
     public function __construct(ContainerInterface $container)
     {
+        $this->map = [];
         $this->container = $container;
     }
 
@@ -52,7 +53,7 @@ class EventPublisher
             $iterator = new \GlobIterator($pathPattern.'*.php');
             $iterator->rewind();
             while (true === $iterator->valid()) {
-                /** @var string[] $tmp */
+                /** @var string[][] $tmp */
                 $tmp = include $iterator->current();
                 $map = array_merge($map, $tmp);
 

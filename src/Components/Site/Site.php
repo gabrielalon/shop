@@ -5,12 +5,11 @@ namespace App\Components\Site;
 use App\Components\Site\Application\Query\CountryQuery;
 use App\Components\Site\Application\Query\LanguageQuery;
 use App\System\Messaging\MessageBus;
-use App\System\Messaging\Query\Query;
 
-class Site
+final class Site
 {
     /** @var MessageBus */
-    private $messageBus;
+    private MessageBus $messageBus;
 
     /**
      * Site constructor.
@@ -23,18 +22,26 @@ class Site
     }
 
     /**
-     * @return CountryQuery|Query
+     * @return CountryQuery
      */
     public function askCountry(): CountryQuery
     {
-        return $this->messageBus->query(CountryQuery::class);
+        $query = $this->messageBus->query(CountryQuery::class);
+
+        assert($query instanceof CountryQuery);
+
+        return $query;
     }
 
     /**
-     * @return LanguageQuery|Query
+     * @return LanguageQuery
      */
     public function askLanguage(): LanguageQuery
     {
-        return $this->messageBus->query(LanguageQuery::class);
+        $query = $this->messageBus->query(LanguageQuery::class);
+
+        assert($query instanceof LanguageQuery);
+
+        return $query;
     }
 }

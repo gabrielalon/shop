@@ -6,13 +6,12 @@ use App\Components\Content\Domain\BlogCategory;
 use App\Components\Content\Domain\Event;
 use App\Components\Site\Domain\Enum\LocaleEnum;
 use App\System\Messaging\Aggregate\AggregateChanged;
-use App\System\Messaging\Aggregate\AggregateRoot;
 use App\System\Valuing\Identity\Uuid;
 use App\System\Valuing\Intl\Language\Texts;
 use App\System\Valuing\Number\Number;
 use Tests\TestCase;
 
-class BlogCategoryTest extends TestCase
+final class BlogCategoryTest extends TestCase
 {
     /**
      * @test
@@ -27,13 +26,13 @@ class BlogCategoryTest extends TestCase
         /** @var AggregateChanged[] $events */
         $events = $this->popRecordedEvents($category);
 
-        $this->assertCount(1, $events);
+        self::assertCount(1, $events);
 
-        /** @var Event\BlogCategoryCreated $event */
         $event = $events[0];
+        assert($event instanceof Event\BlogCategoryCreated);
 
-        $this->assertSame(Event\BlogCategoryCreated::class, $event->eventName());
-        $this->assertTrue($categoryId->equals($event->blogCategoryId()));
+        self::assertSame(Event\BlogCategoryCreated::class, $event->eventName());
+        self::assertTrue($categoryId->equals($event->blogCategoryId()));
     }
 
     /**
@@ -55,13 +54,13 @@ class BlogCategoryTest extends TestCase
         /** @var AggregateChanged[] $events */
         $events = $this->popRecordedEvents($category);
 
-        $this->assertCount(1, $events);
+        self::assertCount(1, $events);
 
-        /** @var Event\BlogCategoryTranslated $event */
         $event = $events[0];
+        assert($event instanceof Event\BlogCategoryTranslated);
 
-        $this->assertSame(Event\BlogCategoryTranslated::class, $event->eventName());
-        $this->assertTrue($event->blogCategoryName()->equals($name));
+        self::assertSame(Event\BlogCategoryTranslated::class, $event->eventName());
+        self::assertTrue($event->blogCategoryName()->equals($name));
     }
 
     /**
@@ -81,13 +80,13 @@ class BlogCategoryTest extends TestCase
         /** @var AggregateChanged[] $events */
         $events = $this->popRecordedEvents($category);
 
-        $this->assertCount(1, $events);
+        self::assertCount(1, $events);
 
-        /** @var Event\BlogCategoryActivated $event */
         $event = $events[0];
+        assert($event instanceof Event\BlogCategoryActivated);
 
-        $this->assertSame(Event\BlogCategoryActivated::class, $event->eventName());
-        $this->assertTrue($event->blogCategoryActive()->raw());
+        self::assertSame(Event\BlogCategoryActivated::class, $event->eventName());
+        self::assertTrue($event->blogCategoryActive()->raw());
     }
 
     /**
@@ -107,13 +106,13 @@ class BlogCategoryTest extends TestCase
         /** @var AggregateChanged[] $events */
         $events = $this->popRecordedEvents($category);
 
-        $this->assertCount(1, $events);
+        self::assertCount(1, $events);
 
-        /** @var Event\BlogCategoryDeactivated $event */
         $event = $events[0];
+        assert($event instanceof Event\BlogCategoryDeactivated);
 
-        $this->assertSame(Event\BlogCategoryDeactivated::class, $event->eventName());
-        $this->assertFalse($event->blogCategoryActive()->raw());
+        self::assertSame(Event\BlogCategoryDeactivated::class, $event->eventName());
+        self::assertFalse($event->blogCategoryActive()->raw());
     }
 
     /**
@@ -135,14 +134,14 @@ class BlogCategoryTest extends TestCase
         /** @var AggregateChanged[] $events */
         $events = $this->popRecordedEvents($category);
 
-        $this->assertCount(1, $events);
+        self::assertCount(1, $events);
 
-        /** @var Event\BlogCategoryPositioned $event */
         $event = $events[0];
+        assert($event instanceof Event\BlogCategoryPositioned);
 
-        $this->assertSame(Event\BlogCategoryPositioned::class, $event->eventName());
-        $this->assertTrue($event->blogCategoryPosition()->equals($position));
-        $this->assertNull($event->blogCategoryParentId());
+        self::assertSame(Event\BlogCategoryPositioned::class, $event->eventName());
+        self::assertTrue($event->blogCategoryPosition()->equals($position));
+        self::assertNull($event->blogCategoryParentId());
     }
 
     /**
@@ -162,22 +161,26 @@ class BlogCategoryTest extends TestCase
         /** @var AggregateChanged[] $events */
         $events = $this->popRecordedEvents($category);
 
-        $this->assertCount(1, $events);
+        self::assertCount(1, $events);
 
-        /** @var Event\BlogCategoryRemoved $event */
         $event = $events[0];
+        assert($event instanceof Event\BlogCategoryRemoved);
 
-        $this->assertSame(Event\BlogCategoryRemoved::class, $event->eventName());
+        self::assertSame(Event\BlogCategoryRemoved::class, $event->eventName());
     }
 
     /**
      * @param AggregateChanged ...$events
      *
-     * @return AggregateRoot|BlogCategory
+     * @return BlogCategory
      */
-    private function reconstituteBlogCategoryFromHistory(AggregateChanged ...$events): AggregateRoot
+    private function reconstituteBlogCategoryFromHistory(AggregateChanged ...$events): BlogCategory
     {
-        return $this->reconstituteAggregateFromHistory(BlogCategory::class, $events);
+        $category = $this->reconstituteAggregateFromHistory(BlogCategory::class, $events);
+
+        assert($category instanceof BlogCategory);
+
+        return $category;
     }
 
     /**
@@ -187,6 +190,10 @@ class BlogCategoryTest extends TestCase
      */
     public function newBlogCategoryCreated(Uuid $categoryId): Event\BlogCategoryCreated
     {
-        return Event\BlogCategoryCreated::occur($categoryId->toString());
+        $event = Event\BlogCategoryCreated::occur($categoryId->toString());
+
+        assert($event instanceof Event\BlogCategoryCreated);
+
+        return $event;
     }
 }

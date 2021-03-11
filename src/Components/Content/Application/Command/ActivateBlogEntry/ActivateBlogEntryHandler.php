@@ -5,14 +5,14 @@ namespace App\Components\Content\Application\Command\ActivateBlogEntry;
 use App\Components\Content\Application\Command\BlogEntryCommandHandler;
 use App\System\Messaging\Command\Command;
 
-class ActivateBlogEntryHandler extends BlogEntryCommandHandler
+final class ActivateBlogEntryHandler extends BlogEntryCommandHandler
 {
     /**
      * {@inheritdoc}
      */
     public function run(Command $command): void
     {
-        /* @var ActivateBlogEntry $command */
+        assert($command instanceof ActivateBlogEntry);
 
         $entry = $this->repository->find($command->id());
 

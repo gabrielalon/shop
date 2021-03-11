@@ -6,7 +6,7 @@ use App\Components\Account\Application\Query\Model\Role;
 use App\Components\Account\Domain\Enum\RoleEnum;
 use App\Components\Account\Infrastructure\Entity\Role as RoleEntity;
 
-class RoleFactory
+final class RoleFactory
 {
     /**
      * @param RoleEntity $entity

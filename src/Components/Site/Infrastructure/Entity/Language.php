@@ -2,14 +2,20 @@
 
 namespace App\Components\Site\Infrastructure\Entity;
 
+use App\System\Eloquent\Contracts\HasCode;
+use App\System\Eloquent\Contracts\HasCodeTrait;
 use Illuminate\Database\Eloquent\Model as Eloquent;
 
 /**
  * @property string $code
  * @property string $native_name
+ *
+ * @method static Language|null findByCode(string $code)
  */
-class Language extends Eloquent
+class Language extends Eloquent implements HasCode
 {
+    use HasCodeTrait;
+
     /** @var bool */
     public $timestamps = false;
 

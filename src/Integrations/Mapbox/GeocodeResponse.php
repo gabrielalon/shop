@@ -2,26 +2,20 @@
 
 namespace App\Integrations\Mapbox;
 
-/**
- * Identical to a MapboxResponse but contains additional methods/properties for working with returned data.
- *
- * @author twbell
- * @license Apache 2.0
- */
-class GeocodeResponse extends MapboxResponse
+final class GeocodeResponse extends MapboxResponse
 {
-    protected $resultCount; //int
-    protected $attribution; //str
-    protected $type; //str
-    protected $query; //array
-    protected $features; //str
+    protected int $resultCount;
+    protected string $attribution;
+    protected string $type;
+    protected array $query;
+    protected string $features;
 
     /**
      * Parses JSON as array and assigns object values.
      *
-     * @param string json JSON returned from API
+     * json JSON returned from API
      */
-    protected function parseResponse()
+    protected function parseResponse(): void
     {
         $this->resultCount = count($this->body['features']);
         $this->attribution = $this->body['attribution'];
@@ -35,24 +29,30 @@ class GeocodeResponse extends MapboxResponse
 
     /**
      * Gets response.
+     *
+     * @return string
      */
-    public function getData()
+    final public function getData(): string
     {
         return $this->features;
     }
 
     /**
      * Gets count.
+     *
+     * @return int
      */
-    public function getCount()
+    final public function getCount(): int
     {
         return $this->resultCount;
     }
 
     /**
      * Gets attribution.
+     *
+     * @return string
      */
-    public function getAttribution()
+    final public function getAttribution(): string
     {
         return $this->attribution;
     }
@@ -60,9 +60,9 @@ class GeocodeResponse extends MapboxResponse
     /**
      * Assigns data element to object for iterator.
      *
-     * @param array data The data array from API response
+     * @param array $data The data array from API response
      */
-    protected function assignData($data)
+    private function assignData(array $data): void
     {
         if ($data) {
             //assign data to iterator

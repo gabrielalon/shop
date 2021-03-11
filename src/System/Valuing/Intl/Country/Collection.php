@@ -16,18 +16,19 @@ final class Collection extends ArrayIterator
     }
 
     /**
-     * @param Collection $other
+     * @param mixed $other
      *
      * @return bool
      */
-    public function equals($other): bool
+    public function equals(mixed $other): bool
     {
         if (false === $other instanceof self) {
             return false;
         }
 
-        /** @var Code $code */
         foreach ($this->getArrayCopy() as $code) {
+            assert($code instanceof Code);
+
             try {
                 $otherValue = $other->get($code->toString());
             } catch (InvalidArgumentException $e) {
@@ -50,7 +51,7 @@ final class Collection extends ArrayIterator
     public function get(string $code): Code
     {
         if (false === $this->offsetExists($code)) {
-            throw new InvalidArgumentException('Not found Country code: '.$code, $code);
+            throw new InvalidArgumentException('Not found Country code: '.$code, 500);
         }
 
         return $this->offsetGet($code);

@@ -9,16 +9,16 @@ use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 
-class AuthService
+final class AuthService
 {
     /** @var RoleEnum */
-    private $role;
+    private RoleEnum $role;
 
     /** @var Guard */
-    private $auth;
+    private Guard $auth;
 
     /** @var Account */
-    private $account;
+    private Account $account;
 
     /**
      * AuthService constructor.
@@ -28,6 +28,7 @@ class AuthService
      */
     public function __construct(Guard $auth, Account $account)
     {
+        $this->role = RoleEnum::ADMIN();
         $this->auth = $auth;
         $this->account = $account;
     }

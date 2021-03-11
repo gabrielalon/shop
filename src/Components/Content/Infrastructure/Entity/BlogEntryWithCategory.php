@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property BlogEntry    $entry
  * @property string       $blog_entry_id
  */
-class BlogEntryWithCategory extends Eloquent
+final class BlogEntryWithCategory extends Eloquent
 {
     /** @var bool */
     public $timestamps = false;

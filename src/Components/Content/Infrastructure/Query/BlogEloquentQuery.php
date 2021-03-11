@@ -13,16 +13,16 @@ use App\Components\Content\Infrastructure\Entity\BlogCategory as CategoryEntity;
 use App\Components\Content\Infrastructure\Entity\BlogEntry as EntryEntity;
 use App\Components\Content\Infrastructure\Query\Model\BlogFactory;
 
-class BlogEloquentQuery implements BlogQuery
+final class BlogEloquentQuery implements BlogQuery
 {
     /** @var BlogFactory */
-    private $factory;
+    private BlogFactory $factory;
 
     /** @var EntryEntity */
-    private $entryDB;
+    private EntryEntity $entryDB;
 
     /** @var CategoryEntity */
-    private $categoryDB;
+    private CategoryEntity $categoryDB;
 
     /**
      * BlogEloquentQuery constructor.
@@ -43,8 +43,7 @@ class BlogEloquentQuery implements BlogQuery
      */
     public function findCategoryById(string $id): BlogCategory
     {
-        /** @var CategoryEntity $entity */
-        if ($entity = $this->categoryDB->newQuery()->find($id)) {
+        if ($entity = $this->categoryDB::findByUuid($id)) {
             return $this->factory->buildCategory($entity);
         }
 
@@ -58,8 +57,8 @@ class BlogEloquentQuery implements BlogQuery
     {
         $collection = new BlogCategoryCollection();
 
-        /** @var CategoryEntity $entity */
         foreach ($this->categoryDB->newQuery()->get()->all() as $entity) {
+            assert($entity instanceof CategoryEntity);
             $collection->add($this->factory->buildCategory($entity));
         }
 
@@ -88,8 +87,8 @@ class BlogEloquentQuery implements BlogQuery
             ->groupBy(['blog_category.id'])
         ;
 
-        /** @var CategoryEntity $entity */
         foreach ($categoryDB->get()->all() as $entity) {
+            assert($entity instanceof CategoryEntity);
             $collection->add($this->factory->buildCategory($entity));
         }
 
@@ -101,8 +100,7 @@ class BlogEloquentQuery implements BlogQuery
      */
     public function findEntryById(string $id): BlogEntry
     {
-        /** @var EntryEntity $entity */
-        if ($entity = $this->entryDB->newQuery()->find($id)) {
+        if ($entity = $this->entryDB::findByUuid($id)) {
             return $this->factory->buildEntry($entity);
         }
 
@@ -116,8 +114,8 @@ class BlogEloquentQuery implements BlogQuery
     {
         $collection = new BlogEntryCollection();
 
-        /** @var EntryEntity $entity */
         foreach ($this->entryDB->newQuery()->get()->all() as $entity) {
+            assert($entity instanceof EntryEntity);
             $collection->add($this->factory->buildEntry($entity));
         }
 
@@ -131,10 +129,9 @@ class BlogEloquentQuery implements BlogQuery
     {
         $collection = new BlogCategoryCollection();
 
-        /** @var EntryEntity $entry */
-        if ($entry = $this->entryDB->newQuery()->find($id)) {
-            /** @var CategoryEntity $entity */
+        if ($entry = $this->entryDB::findByUuid($id)) {
             foreach ($entry->categories()->get()->all() as $entity) {
+                assert($entity instanceof CategoryEntity);
                 $collection->add($this->factory->buildCategory($entity));
             }
         }

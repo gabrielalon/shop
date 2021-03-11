@@ -9,26 +9,25 @@ use App\Components\Content\Application\Service\SystemSettingRegistry;
 use App\Components\Content\Application\Validator\BlogCategoryValidatorFactory;
 use App\Components\Content\Application\Validator\BlogEntryValidatorFactory;
 use App\System\Messaging\MessageBus;
-use App\System\Messaging\Query\Query;
 use App\System\Messaging\Saga\SagaProcessor;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Factory;
 use Webmozart\Assert\Assert;
 
-class Content
+final class Content
 {
     /** @var Factory */
-    private $factory;
+    private Factory $factory;
 
     /** @var MessageBus */
-    private $messageBus;
+    private MessageBus $messageBus;
 
     /** @var SagaProcessor */
-    private $sagaProcessor;
+    private SagaProcessor $sagaProcessor;
 
     /** @var SystemSettingRegistry */
-    private $settingRegistry;
+    private SystemSettingRegistry $settingRegistry;
 
     /**
      * Content constructor.
@@ -246,19 +245,27 @@ class Content
     }
 
     /**
-     * @return BlogQuery|Query
+     * @return BlogQuery
      */
     public function askBlog(): BlogQuery
     {
-        return $this->messageBus->query(BlogQuery::class);
+        $query = $this->messageBus->query(BlogQuery::class);
+
+        assert($query instanceof BlogQuery);
+
+        return $query;
     }
 
     /**
-     * @return BlogTreeQuery|Query
+     * @return BlogTreeQuery
      */
     public function askBlogTree(): BlogTreeQuery
     {
-        return $this->messageBus->query(BlogTreeQuery::class);
+        $query = $this->messageBus->query(BlogTreeQuery::class);
+
+        assert($query instanceof BlogTreeQuery);
+
+        return $query;
     }
 
     /**

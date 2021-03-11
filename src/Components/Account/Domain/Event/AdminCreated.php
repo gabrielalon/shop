@@ -6,7 +6,6 @@ use App\Components\Account\Domain\Admin;
 use App\Components\Account\Domain\Valuing\Name;
 use App\System\Messaging\Aggregate\AggregateRoot;
 use App\System\Valuing\Char\Text;
-use App\System\Valuing\Identity\Uuid;
 
 class AdminCreated extends AdminEvent
 {
@@ -27,11 +26,11 @@ class AdminCreated extends AdminEvent
     }
 
     /**
-     * @return Uuid
+     * @return Text
      */
-    public function adminUserId(): Uuid
+    public function adminPassword(): Text
     {
-        return Uuid::fromIdentity($this->payload['user_id']);
+        return Text::fromString($this->payload['password']);
     }
 
     /**
@@ -45,6 +44,6 @@ class AdminCreated extends AdminEvent
         $admin->setId($this->adminId());
         $admin->setName($this->adminName());
         $admin->setEmail($this->adminEmail());
-        $admin->setUserId($this->adminUserId());
+        $admin->setPassword($this->adminPassword());
     }
 }

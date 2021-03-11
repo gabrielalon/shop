@@ -6,12 +6,11 @@ use App\Components\Content\Domain\Event;
 use App\Components\Content\Domain\Projection\BlogEntryProjection;
 use App\Components\Content\Infrastructure\Entity\BlogEntry as EntryEntity;
 use App\Components\Site\Domain\Enum\LocaleEnum;
-use Illuminate\Database\Eloquent\Model;
 
-class BlogEntryEloquentProjector implements BlogEntryProjection
+final class BlogEntryEloquentProjector implements BlogEntryProjection
 {
     /** @var EntryEntity */
-    private $db;
+    private EntryEntity $db;
 
     /**
      * BlogEntryEloquentProjector constructor.
@@ -97,6 +96,8 @@ class BlogEntryEloquentProjector implements BlogEntryProjection
 
     /**
      * {@inheritdoc}
+     *
+     * @throws \Exception
      */
     public function onBlogEntryRemoved(Event\BlogEntryRemoved $event): void
     {
@@ -108,10 +109,10 @@ class BlogEntryEloquentProjector implements BlogEntryProjection
     /**
      * @param Event\BlogEntryEvent $event
      *
-     * @return EntryEntity|Model|null
+     * @return EntryEntity|null
      */
     public function findBlogEntry(Event\BlogEntryEvent $event): ?EntryEntity
     {
-        return $this->db->newQuery()->find($event->blogEntryId()->toString());
+        return $this->db::findByUuid($event->blogEntryId()->toString());
     }
 }

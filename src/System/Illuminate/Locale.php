@@ -28,7 +28,7 @@ final class Locale
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     public function fallback(): string
     {
@@ -74,13 +74,13 @@ final class Locale
      *
      * @return bool
      */
-    public function isSupported($locale = null): bool
+    public function isSupported(?string $locale = null): bool
     {
         return in_array($locale, $this->supported(), true);
     }
 
     /**
-     * @return string[]
+     * @return string[][]
      */
     private function getConfiguredSupportedLocales(): array
     {

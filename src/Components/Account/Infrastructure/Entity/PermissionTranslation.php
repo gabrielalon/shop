@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model as Eloquent;
  * @property string $locale
  * @property string $description
  */
-class PermissionTranslation extends Eloquent
+final class PermissionTranslation extends Eloquent
 {
     /** @var bool */
     public $timestamps = false;

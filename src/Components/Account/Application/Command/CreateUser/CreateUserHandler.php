@@ -8,10 +8,10 @@ use App\Components\Account\Domain\User;
 use App\System\Messaging\Command\Command;
 use Illuminate\Contracts\Hashing\Hasher;
 
-class CreateUserHandler extends UserCommandHandler
+final class CreateUserHandler extends UserCommandHandler
 {
     /** @var Hasher */
-    private $hasher;
+    private Hasher $hasher;
 
     /**
      * ChangePasswordHandler constructor.
@@ -30,7 +30,7 @@ class CreateUserHandler extends UserCommandHandler
      */
     public function run(Command $command): void
     {
-        /* @var CreateUser $command */
+        assert($command instanceof CreateUser);
 
         $this->repository->flush(User::create(
             $command->id(),

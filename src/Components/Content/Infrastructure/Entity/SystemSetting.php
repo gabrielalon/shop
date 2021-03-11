@@ -2,6 +2,7 @@
 
 namespace App\Components\Content\Infrastructure\Entity;
 
+use App\Components\Content\Domain\Enum\SystemSettingType;
 use Illuminate\Database\Eloquent\Model as Eloquent;
 
 /**
@@ -10,7 +11,7 @@ use Illuminate\Database\Eloquent\Model as Eloquent;
  * @property string $data_type
  * @property string $data
  */
-class SystemSetting extends Eloquent
+final class SystemSetting extends Eloquent
 {
     /** @var bool */
     public $timestamps = false;
@@ -20,4 +21,20 @@ class SystemSetting extends Eloquent
 
     /** @var array */
     protected $guarded = [];
+
+    /**
+     * @return mixed
+     */
+    public function getValue(): mixed
+    {
+        switch ($this->data_type) {
+            case SystemSettingType::BOOLEAN()->getValue():
+                return filter_var($this->data, FILTER_VALIDATE_BOOLEAN);
+            case SystemSettingType::INTEGER()->getValue():
+                return filter_var($this->data, FILTER_VALIDATE_INT);
+            case SystemSettingType::STRING()->getValue():
+            default:
+                return $this->data;
+        }
+    }
 }

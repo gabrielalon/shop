@@ -8,10 +8,10 @@ use App\System\Messaging\Saga\State;
 use App\System\Messaging\Saga\State\StateRepository;
 use Carbon\Carbon;
 
-class StateEloquentRepository implements StateRepository
+final class StateEloquentRepository implements StateRepository
 {
     /** @var StateEntity */
-    private $db;
+    private StateEntity $db;
 
     /**
      * StateEloquentRepository constructor.
@@ -33,8 +33,9 @@ class StateEloquentRepository implements StateRepository
             ->where('saga_type', '=', $sagaType)
             ->where('is_done', '=', false);
 
-        /** @var StateEntity $entity */
         if ($entity = $query->first()) {
+            assert($entity instanceof StateEntity);
+
             return new State($entity->id, $entity->aggregate_id, $entity->payload);
         }
 

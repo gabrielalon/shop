@@ -24,11 +24,11 @@ final class Codes extends VO
     }
 
     /**
-     * @param Codes $other
+     * @param mixed $other
      *
      * @return bool
      */
-    public function equals($other): bool
+    public function equals(mixed $other): bool
     {
         if (false === $other instanceof self) {
             return false;

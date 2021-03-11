@@ -5,14 +5,14 @@ namespace App\Components\Content\Application\Command\TranslateBlogEntry;
 use App\Components\Content\Application\Command\BlogEntryCommandHandler;
 use App\System\Messaging\Command\Command;
 
-class TranslateBlogEntryHandler extends BlogEntryCommandHandler
+final class TranslateBlogEntryHandler extends BlogEntryCommandHandler
 {
     /**
      * {@inheritdoc}
      */
     public function run(Command $command): void
     {
-        /* @var TranslateBlogEntry $command */
+        assert($command instanceof TranslateBlogEntry);
 
         $category = $this->repository->find($command->id());
 

@@ -6,7 +6,6 @@ use App\Components\Content\Domain\BlogEntry;
 use App\Components\Content\Domain\Event;
 use App\Components\Site\Domain\Enum\LocaleEnum;
 use App\System\Messaging\Aggregate\AggregateChanged;
-use App\System\Messaging\Aggregate\AggregateRoot;
 use App\System\Valuing\Identity\Uuid;
 use App\System\Valuing\Identity\Uuids;
 use App\System\Valuing\Intl\Language\Contents;
@@ -15,7 +14,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
-class BlogEntryTest extends TestCase
+final class BlogEntryTest extends TestCase
 {
     /**
      * @test
@@ -30,13 +29,13 @@ class BlogEntryTest extends TestCase
         /** @var AggregateChanged[] $events */
         $events = $this->popRecordedEvents($entry);
 
-        $this->assertCount(1, $events);
+        self::assertCount(1, $events);
 
-        /** @var Event\BlogEntryCreated $event */
         $event = $events[0];
+        assert($event instanceof Event\BlogEntryCreated);
 
-        $this->assertSame(Event\BlogEntryCreated::class, $event->eventName());
-        $this->assertTrue($entryId->equals($event->blogEntryId()));
+        self::assertSame(Event\BlogEntryCreated::class, $event->eventName());
+        self::assertTrue($entryId->equals($event->blogEntryId()));
     }
 
     /**
@@ -59,14 +58,14 @@ class BlogEntryTest extends TestCase
         /** @var AggregateChanged[] $events */
         $events = $this->popRecordedEvents($entry);
 
-        $this->assertCount(1, $events);
+        self::assertCount(1, $events);
 
-        /** @var Event\BlogEntryTranslated $event */
         $event = $events[0];
+        assert($event instanceof Event\BlogEntryTranslated);
 
-        $this->assertSame(Event\BlogEntryTranslated::class, $event->eventName());
-        $this->assertTrue($event->blogEntryName()->equals($name));
-        $this->assertTrue($event->blogEntryDescription()->equals($description));
+        self::assertSame(Event\BlogEntryTranslated::class, $event->eventName());
+        self::assertTrue($event->blogEntryName()->equals($name));
+        self::assertTrue($event->blogEntryDescription()->equals($description));
     }
 
     /**
@@ -88,12 +87,12 @@ class BlogEntryTest extends TestCase
         /** @var AggregateChanged[] $events */
         $events = $this->popRecordedEvents($entry);
 
-        $this->assertCount(1, $events);
+        self::assertCount(1, $events);
 
-        /** @var Event\BlogEntryPublished $event */
         $event = $events[0];
+        assert($event instanceof Event\BlogEntryPublished);
 
-        $this->assertSame(Event\BlogEntryPublished::class, $event->eventName());
+        self::assertSame(Event\BlogEntryPublished::class, $event->eventName());
     }
 
     /**
@@ -115,13 +114,13 @@ class BlogEntryTest extends TestCase
         /** @var AggregateChanged[] $events */
         $events = $this->popRecordedEvents($entry);
 
-        $this->assertCount(1, $events);
+        self::assertCount(1, $events);
 
-        /** @var Event\BlogEntryCategorisedEvent $event */
         $event = $events[0];
+        assert($event instanceof Event\BlogEntryCategorisedEvent);
 
-        $this->assertSame(Event\BlogEntryCategorisedEvent::class, $event->eventName());
-        $this->assertTrue($event->blogEntryCategoryIds()->equals($categoriesID));
+        self::assertSame(Event\BlogEntryCategorisedEvent::class, $event->eventName());
+        self::assertTrue($event->blogEntryCategoryIds()->equals($categoriesID));
     }
 
     /**
@@ -141,13 +140,13 @@ class BlogEntryTest extends TestCase
         /** @var AggregateChanged[] $events */
         $events = $this->popRecordedEvents($entry);
 
-        $this->assertCount(1, $events);
+        self::assertCount(1, $events);
 
-        /** @var Event\BlogEntryActivated $event */
         $event = $events[0];
+        assert($event instanceof Event\BlogEntryActivated);
 
-        $this->assertSame(Event\BlogEntryActivated::class, $event->eventName());
-        $this->assertTrue($event->blogEntryActive()->raw());
+        self::assertSame(Event\BlogEntryActivated::class, $event->eventName());
+        self::assertTrue($event->blogEntryActive()->raw());
     }
 
     /**
@@ -167,13 +166,13 @@ class BlogEntryTest extends TestCase
         /** @var AggregateChanged[] $events */
         $events = $this->popRecordedEvents($entry);
 
-        $this->assertCount(1, $events);
+        self::assertCount(1, $events);
 
-        /** @var Event\BlogEntryDeactivated $event */
         $event = $events[0];
+        assert($event instanceof Event\BlogEntryDeactivated);
 
-        $this->assertSame(Event\BlogEntryDeactivated::class, $event->eventName());
-        $this->assertFalse($event->blogEntryActive()->raw());
+        self::assertSame(Event\BlogEntryDeactivated::class, $event->eventName());
+        self::assertFalse($event->blogEntryActive()->raw());
     }
 
     /**
@@ -193,22 +192,26 @@ class BlogEntryTest extends TestCase
         /** @var AggregateChanged[] $events */
         $events = $this->popRecordedEvents($entry);
 
-        $this->assertCount(1, $events);
+        self::assertCount(1, $events);
 
-        /** @var Event\BlogEntryRemoved $event */
         $event = $events[0];
+        assert($event instanceof Event\BlogEntryRemoved);
 
-        $this->assertSame(Event\BlogEntryRemoved::class, $event->eventName());
+        self::assertSame(Event\BlogEntryRemoved::class, $event->eventName());
     }
 
     /**
      * @param AggregateChanged ...$events
      *
-     * @return AggregateRoot|BlogEntry
+     * @return BlogEntry
      */
-    private function reconstituteBlogEntryFromHistory(AggregateChanged ...$events): AggregateRoot
+    private function reconstituteBlogEntryFromHistory(AggregateChanged ...$events): BlogEntry
     {
-        return $this->reconstituteAggregateFromHistory(BlogEntry::class, $events);
+        $entry = $this->reconstituteAggregateFromHistory(BlogEntry::class, $events);
+
+        assert($entry instanceof BlogEntry);
+
+        return $entry;
     }
 
     /**
@@ -218,6 +221,10 @@ class BlogEntryTest extends TestCase
      */
     public function newBlogEntryCreated(Uuid $entryId): Event\BlogEntryCreated
     {
-        return Event\BlogEntryCreated::occur($entryId->toString());
+        $event = Event\BlogEntryCreated::occur($entryId->toString());
+
+        assert($event instanceof Event\BlogEntryCreated);
+
+        return $event;
     }
 }

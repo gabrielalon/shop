@@ -10,11 +10,14 @@ final class Admin extends AggregateRoot
     /** @var Valuing\Name */
     private $name;
 
+    /** @var VO\Intl\Language\Code */
+    private $locale;
+
     /** @var VO\Char\Text */
     private $email;
 
-    /** @var VO\Identity\Uuid */
-    private $userId;
+    /** @var VO\Char\Text */
+    private $password;
 
     /**
      * @param VO\Identity\Uuid $id
@@ -41,6 +44,18 @@ final class Admin extends AggregateRoot
     }
 
     /**
+     * @param VO\Intl\Language\Code $locale
+     *
+     * @return Admin
+     */
+    public function setLocale(VO\Intl\Language\Code $locale): Admin
+    {
+        $this->locale = $locale;
+
+        return $this;
+    }
+
+    /**
      * @param VO\Char\Text $email
      *
      * @return Admin
@@ -53,13 +68,13 @@ final class Admin extends AggregateRoot
     }
 
     /**
-     * @param VO\Identity\Uuid $userId
+     * @param VO\Char\Text $password
      *
-     * @return $this
+     * @return Admin
      */
-    public function setUserId(VO\Identity\Uuid $userId): Admin
+    public function setPassword(VO\Char\Text $password): Admin
     {
-        $this->userId = $userId;
+        $this->password = $password;
 
         return $this;
     }
@@ -69,7 +84,7 @@ final class Admin extends AggregateRoot
      * @param string $firstName
      * @param string $lastName
      * @param string $email
-     * @param string $userId
+     * @param string $password
      *
      * @return Admin
      */
@@ -78,15 +93,15 @@ final class Admin extends AggregateRoot
         string $firstName,
         string $lastName,
         string $email,
-        string $userId
+        string $password
     ): Admin {
-        $admin = new static();
+        $admin = new self();
 
         $admin->recordThat(Event\AdminCreated::occur($id, [
             'first_name' => $firstName,
             'last_name' => $lastName,
             'email' => $email,
-            'user_id' => $userId,
+            'password' => $password,
         ]));
 
         return $admin;
@@ -101,6 +116,16 @@ final class Admin extends AggregateRoot
         $this->recordThat(Event\AdminNameChanged::occur($this->aggregateId(), [
             'first_name' => $firstName,
             'last_name' => $lastName,
+        ]));
+    }
+
+    /**
+     * @param string $locale
+     */
+    public function refreshLocale(string $locale): void
+    {
+        $this->recordThat(Event\AdminLocaleRefreshed::occur($this->aggregateId(), [
+            'locale' => $locale,
         ]));
     }
 

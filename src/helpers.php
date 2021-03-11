@@ -5,6 +5,9 @@
 // prints hidden html with name of file + line from which printer was called
 // use only in printers ^^ vv
 
+use App\System\Illuminate\Locale;
+use Illuminate\Contracts\Container\BindingResolutionException;
+
 function printCallLine()
 {
     $dbg = debug_backtrace();
@@ -107,11 +110,11 @@ function __statistic($message, $start)
 // LOCALES
 
 /**
- * @return \App\System\Illuminate\Locale
+ * @return Locale
  *
- * @throws \Illuminate\Contracts\Container\BindingResolutionException
+ * @throws BindingResolutionException
  */
-function locale(): App\System\Illuminate\Locale
+function locale(): Locale
 {
-    return app()->make(App\System\Illuminate\Locale::class);
+    return app()->make(Locale::class);
 }

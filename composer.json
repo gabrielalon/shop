@@ -10,8 +10,8 @@
     "require": {
         "php": "^8.0",
         "ext-json": "*",
+        "ext-curl": "*",
         "astrotomic/laravel-translatable": "^11.9",
-        "barryvdh/laravel-debugbar": "^3.5",
         "fideloper/proxy": "^4.4",
         "fruitcake/laravel-cors": "^2.0",
         "graham-campbell/markdown": "^13.1",
@@ -27,6 +27,8 @@
         "symfony/intl": "^5.2"
     },
     "require-dev": {
+        "roave/security-advisories": "dev-master",
+        "barryvdh/laravel-debugbar": "^3.5",
         "facade/ignition": "^2.5",
         "fakerphp/faker": "^1.9.1",
         "friendsofphp/php-cs-fixer": "^2.18",
